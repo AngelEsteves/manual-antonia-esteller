@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Glosario · E.B.N.B. Antonia Esteller</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="icon" type="image/jpeg" href="fotos_videos/escudo.jpg" />
+  <script type="module" src="./app.js" defer></script>
+</head>
+<body>
+  <header class="header">
+    <nav class="nav">
+      <a class="brand" href="./index.html">
+        <img id="brandLogo" src="fotos_videos/escudo.jpg" alt="Escudo" style="margin-left:-6px; height:48px;" />
+        <span class="brand-name" style="padding-left:8px; white-space:nowrap;">E.B.N.B. "Antonia Esteller"</span>
+      </a>
+      <div class="navLinks">
+        <a href="./index.html">Inicio</a>
+        <a href="./index.html#memoria">Galería</a>
+        <a href="./index.html#institucion">Institución</a>
+        <a href="./fallos.html">Fallos</a>
+        <a href="./glosario.html" class="active">Glosario</a>
+        <a href="./pcs.html">Inventario</a>
+        <button id="downloadPagePDF" class="btn">Descargar PDF</button>
+        <button id="themeToggle" class="icon-btn" title="Tema">☾</button>
+        <img id="uptLogo" src="fotos_videos/uptaclaro.png" alt="UPT Aragua" style="height:48px; margin-left:10px;"/>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="section">
+      <h2>Glosario de términos</h2>
+      <p class="muted">Busca conceptos relacionados con componentes, mantenimiento preventivo y correctivo de PCs. Puedes filtrar por letra inicial o escribir para buscar.</p>
+
+      <div class="glossary-wrapper">
+        <div class="glossary-search">
+          <input id="textFilter" type="text" placeholder="Buscar término..." aria-label="Buscar término" />
+        </div>
+        <div class="letter-bar" id="letterBar"></div>
+        <div id="glossaryList" class="glossary-list" aria-live="polite"></div>
+        <div id="noResults" class="no-results" style="display:none">No hay resultados para tu búsqueda.</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <small>© 2025 · Proyecto académico — Glosario de mantenimiento y computación.</small>
+  </footer>
+
+  <script>
+    // Limpieza y reconstrucción del script
+    (function(){
+      try{ const t = localStorage.getItem('theme'); if(t==='dark') document.documentElement.classList.add('dark'); }catch(e){}
+    })();
+
+    const terms = [
+      { term:'Actualización', def:'Proceso de instalar versiones más recientes de software o firmware para mejorar seguridad, rendimiento o compatibilidad.' },
+      { term:'Antivirus', def:'Programa diseñado para detectar y eliminar malware y otros códigos maliciosos.' },
+      { term:'BIOS', def:'Sistema básico de entrada y salida. Firmware que inicia el hardware y carga el sistema operativo.' },
+      { term:'Backup (Respaldo)', def:'Copia de seguridad de datos críticos para poder restaurarlos en caso de falla.' },
+      { term:'Cable SATA', def:'Interfaz de conexión para discos duros y SSD modernos.' },
+      { term:'CPU', def:'Unidad Central de Procesamiento. Ejecuta instrucciones y coordina el funcionamiento del sistema.' },
+      { term:'Diagnóstico', def:'Proceso de análisis para identificar el origen de una falla técnica.' },
+      { term:'Disco Duro', def:'Dispositivo de almacenamiento magnético para guardar datos de forma permanente.' },
+      { term:'Driver (Controlador)', def:'Software que permite que el sistema operativo se comunique con un dispositivo hardware.' },
+      { term:'Fuente de poder', def:'Componente que suministra energía eléctrica estable a los demás elementos del PC.' },
+      { term:'Gabinete', def:'Estructura física donde se alojan los componentes internos de la computadora.' },
+      { term:'Hardware', def:'Componentes físicos de un sistema de cómputo.' },
+      { term:'Mantenimiento Correctivo', def:'Acciones para reparar fallas ya manifestadas en equipos o componentes.' },
+      { term:'Mantenimiento Preventivo', def:'Acciones periódicas para evitar fallas futuras y prolongar la vida útil del equipo.' },
+      { term:'Memoria RAM', def:'Memoria de acceso aleatorio. Almacena datos temporales usados por procesos activos.' },
+      { term:'Monitoreo', def:'Observación continua de métricas (temperatura, uso de recursos) para detectar anomalías.' },
+      { term:'Overclocking', def:'Práctica de aumentar la frecuencia de operación de componentes (CPU/GPU) más allá de especificaciones para mejorar rendimiento.' },
+      { term:'Partición', def:'División lógica de un disco para organizar datos o instalar múltiples sistemas.' },
+      { term:'Periférico', def:'Dispositivo externo que se conecta al PC (teclado, mouse, impresora, etc.).' },
+      { term:'Procesador', def:'Chip que interpreta y ejecuta instrucciones. Determina la velocidad de procesamiento.' },
+      { term:'Sistema Operativo', def:'Software base que gestiona recursos y permite la interacción con el hardware (ej: Ubuntu).' },
+      { term:'Temperatura Crítica', def:'Umbral térmico a partir del cual un componente puede dañarse o reducir su rendimiento.' },
+      { term:'Ubuntu', def:'Distribución de Linux usada comúnmente en entornos educativos y de oficina.' },
+      { term:'Ventilación', def:'Flujo de aire para disipar calor generado por componentes internos.' },
+      { term:'Virus', def:'Programa malicioso que se replica e interfiere con el funcionamiento del sistema.' },
+      { term:'Wi-Fi', def:'Tecnología de red inalámbrica que permite conectar dispositivos a Internet sin cables.' },
+      { term:'Windows', def:'Sistema operativo comercial desarrollado por Microsoft muy difundido en entornos de escritorio.' },
+      { term:'Xeon', def:'Línea de procesadores de Intel orientada a servidores y estaciones de trabajo, con soporte para cargas intensivas.' },
+      { term:'Yottabyte', def:'Unidad de medida de almacenamiento equivalente a 10^24 bytes, de uso teórico/extremo.' },
+      { term:'Zócalo (Socket)', def:'Conector físico de la placa madre donde se instala el procesador.' }
+    ];
+
+    const letterBar = document.getElementById('letterBar');
+    const glossaryList = document.getElementById('glossaryList');
+    const noResults = document.getElementById('noResults');
+    const textFilter = document.getElementById('textFilter');
+    const ALL_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    const lettersPresent = new Set(terms.map(t => t.term[0].toUpperCase()));
+    let currentLetter = null;
+
+    function renderLetters(){
+      letterBar.innerHTML = '';
+      const allBtn = document.createElement('button');
+      allBtn.textContent = 'Todos';
+      if(currentLetter === null) allBtn.classList.add('active');
+      allBtn.addEventListener('click', ()=>{ currentLetter=null; filter(); });
+      letterBar.appendChild(allBtn);
+      ALL_LETTERS.forEach(L => {
+        const b = document.createElement('button');
+        b.textContent = L;
+        if(!lettersPresent.has(L)){
+          b.classList.add('disabled');
+          b.title = 'Sin términos';
+        } else {
+          b.addEventListener('click', ()=>{ currentLetter=L; filter(); });
+        }
+        if(L === currentLetter) b.classList.add('active');
+        letterBar.appendChild(b);
+      });
+    }
+
+    function filter(){
+      const q = textFilter.value.trim().toLowerCase();
+      const filtered = terms.filter(t => {
+        const letterOk = currentLetter === null || t.term[0].toUpperCase() === currentLetter;
+        const textOk = !q || (t.term.toLowerCase().includes(q) || t.def.toLowerCase().includes(q));
+        return letterOk && textOk;
+      });
+      renderList(filtered);
+      renderLetters();
+    }
+
+    function renderList(list){
+      glossaryList.innerHTML = '';
+      if(list.length === 0){ noResults.style.display='block'; return; }
+      noResults.style.display='none';
+      list.forEach(item => {
+        const art = document.createElement('article');
+        art.className = 'glossary-entry';
+        const h = document.createElement('h3');
+        h.className = 'glossary-term';
+        h.innerHTML = `<span>${item.term}</span><span class='badge'>${item.term[0].toUpperCase()}</span>`;
+        const p = document.createElement('p');
+        p.className = 'glossary-def';
+        p.textContent = item.def;
+        art.appendChild(h); art.appendChild(p);
+        glossaryList.appendChild(art);
+      });
+    }
+
+    textFilter.addEventListener('input', filter);
+    filter();
+  </script>
+</body>
+</html>

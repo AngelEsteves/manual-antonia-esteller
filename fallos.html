@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fallos y Diagnóstico · E.B.N.B. Antonia Esteller</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="icon" type="image/jpeg" href="fotos_videos/escudo.jpg" />
+</head>
+<body>
+  <header class="header">
+    <nav class="nav">
+      <a class="brand" href="./index.html">
+        <img id="brandLogo" src="fotos_videos/escudo.jpg" alt="Escudo" style="margin-left:-6px; height:48px;" />
+        <span class="brand-name" style="padding-left:8px; white-space:nowrap;">E.B.N.B. "Antonia Esteller"</span>
+      </a>
+      <div class="navLinks">
+        <a href="./index.html">Inicio</a>
+        <a href="./index.html#memoria">Galería</a>
+        <a href="./index.html#institucion">Institución</a>
+        <a href="./fallos.html" class="active">Fallos</a>
+        <a href="./glosario.html">Glosario</a>
+        <a href="./pcs.html">Inventario</a>
+        <button id="downloadPagePDF" class="btn">Descargar PDF</button>
+        <button id="themeToggle" class="icon-btn" title="Tema">☾</button>
+        <img id="uptLogo" src="fotos_videos/uptaclaro.png" alt="UPT Aragua" style="height:48px; margin-left:10px;"/>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="section">
+      <h2>Fallos comunes y guía de diagnóstico</h2>
+  <p class="muted">Selecciona un componente y luego un problema para ver <strong>Causas</strong>, <strong>Detección</strong>, <strong>Solución</strong> y <strong>Tips</strong>.</p>
+      <div class="fault-layout">
+        <aside class="fault-left">
+          <div class="component-nav" id="componentNav">
+            <h3>Componentes</h3>
+            <ul id="componentList"></ul>
+          </div>
+          <div class="problem-list" id="problemList" style="display:none">
+            <h4>Problemas</h4>
+            <ul id="problemItems"></ul>
+          </div>
+        </aside>
+        <article class="fault-center" id="faultCenter">
+          <header>
+            <h2 id="problemTitle">Selecciona un problema</h2>
+            <div class="problem-meta" id="problemMeta"></div>
+          </header>
+          <div id="faultContent">
+            <p class="muted">Usa el panel izquierdo para comenzar. Aquí verás el análisis estructurado del problema elegido.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><small>© 2025 · Guía de fallos y diagnóstico de laboratorio.</small></footer>
+
+  <script type="module" src="./app.js" defer></script>
+  <script>
+    // Tema oscuro persistente
+    (function(){ try{ if(localStorage.getItem('theme')==='dark') document.documentElement.classList.add('dark'); }catch(e){} })();
+
+  // Dataset: 6 componentes, 4 problemas cada uno (pasos solución serán ampliados dinámicamente)
+    const data = [
+      { id:'cpu', nombre:'CPU / Procesador', icon:'🧠', problemas:[
+          { id:'cpu-sobrecalentamiento', titulo:'Sobrecalentamiento', gravedad:'Alta',
+            causas:[ 'Pasta térmica seca/mal aplicada', 'Disipador mal asentado', 'Flujo de aire deficiente', 'Polvo acumulado', 'Overclock agresivo' ],
+            deteccion:[ 'Temperaturas >90°C en stress', 'Throttling de frecuencia', 'Ventiladores siempre a tope', 'Eventos térmicos en dmesg', 'Reinicios bajo carga' ],
+            solucion:[ 'Apagar y desconectar', 'Retirar y limpiar disipador (isopropílico 90%)', 'Aplicar pasta (punto grano arroz)', 'Reinstalar con presión uniforme', 'Reorganizar cables para mejorar flujo', 'Limpiar polvo sujetando ventiladores', 'Ajustar curva PWM >60°C', 'Verificar pico <85°C tras test' ],
+            tips:[ 'Registrar fecha de cambio de pasta' ] },
+          { id:'cpu-inestabilidad', titulo:'Inestabilidad / Cuelgues', gravedad:'Media',
+            causas:[ 'Voltajes insuficientes', 'VRM muy caliente', 'RAM defectuosa', 'Plan de energía agresivo', 'Procesos maliciosos' ],
+            deteccion:[ 'Machine Check Exceptions', 'Hashes inconsistentes', 'Cuelgues sólo con estrés combinado', 'Memtest OK pero falla', 'Oscilaciones de frecuencia' ],
+            solucion:[ 'Restaurar BIOS por defecto', 'Actualizar BIOS/microcódigo', 'Memtest ≥4 pasadas', 'Medir 12V/5V/3.3V (≤5% variación)', 'Plan de energía Equilibrado', 'Escanear malware', 'Probar CPU en otra placa' ],
+            tips:[ 'Anotar condiciones exactas del fallo' ] },
+          { id:'cpu-rendimiento-bajo', titulo:'Rendimiento bajo', gravedad:'Media',
+            causas:[ 'Throttling oculto', 'Perfil ahorro activo', 'Proceso de fondo saturando', 'Microcódigo antiguo', 'Disipación sucia' ],
+            deteccion:[ 'Uso 100% en un núcleo persistente', 'Benchmarks por debajo referencia', 'Temperatura reposo >60°C', 'Frecuencia menor a boost esperado', 'Latencias elevadas' ],
+            solucion:[ 'Identificar y limitar proceso invasivo', 'Cambiar plan energía', 'Limpiar disipador y polvo', 'Actualizar BIOS/microcódigo', 'Revisar límites térmicos' ],
+            tips:[ 'Comparar con equipo similar' ] },
+          { id:'cpu-consumo-excesivo', titulo:'Consumo eléctrico excesivo', gravedad:'Baja',
+            causas:[ 'Voltajes manuales altos', 'C-States deshabilitados', 'Servicios en segundo plano', 'Perfil rendimiento extremo', 'Pasta térmica insuficiente' ],
+            deteccion:[ 'Watt alto en reposo', 'Estado C0 >80% en idle', 'Temperatura idle alta', 'Powertop sin suspensión dispositivos', 'Historial consumo anómalo' ],
+            solucion:[ 'Restablecer voltajes auto', 'Habilitar C-States / SpeedStep', 'Optimizar servicios de inicio', 'Revisar pasta térmica', 'Ajustar suspensión y ahorro' ],
+            tips:[ 'Powertop --auto-tune para ajustes rápidos' ] }
+        ]},
+      { id:'ram', nombre:'Memoria RAM', icon:'📗', problemas:[
+          { id:'ram-errores', titulo:'Errores / Corrupción', gravedad:'Alta',
+            causas:[ 'Celdas degradadas', 'Timings incompatibles', 'Overclock inestable', 'Oxidación ligera', 'Descarga electrostática' ],
+            deteccion:[ 'Memtest con fallos', 'Segfaults aleatorios', 'Kernel panic variable', 'Hashes inconsistentes', 'LED diagnóstico' ],
+            solucion:[ 'Retirar módulos y descargar estática', 'Limpiar contactos (goma + alcohol)', 'Instalar pares idénticos', 'Cargar perfil XMP/JEDEC estable', 'Memtest 4–6 pasadas', 'Reemplazar módulo defectuoso', 'Registrar inventario' ],
+            tips:[ 'No mezclar latencias extremas' ] },
+          { id:'ram-falta-capacidad', titulo:'Falta de memoria / Swap alto', gravedad:'Media',
+            causas:[ 'Aplicaciones pesadas simultáneas', 'Cache no liberada', 'Demasiadas pestañas navegador', 'Edición multimedia', 'Swappiness alto' ],
+            deteccion:[ 'Swap in/out frecuente', 'Mem libre muy baja', 'Retrasos al alternar ventanas', 'Swap >30% usado', 'Procesos grandes en htop' ],
+            solucion:[ 'Cerrar apps innecesarias', 'Agregar RAM si recurrente', 'Ajustar swappiness 10–20', 'Limpiar cache navegador', 'Organizar sesiones por tandas' ],
+            tips:[ 'Vigilar con free -h' ] },
+          { id:'ram-no-arranca', titulo:'Sistema no arranca (beeps)', gravedad:'Alta',
+            causas:[ 'Módulo mal asentado', 'Banco dañado', 'Perfil XMP inestable', 'Densidad incompatible', 'Slot sucio' ],
+            deteccion:[ 'Códigos beep RAM', 'LED DRAM fijo', 'POST detenido', 'Funciona en otro slot', 'Arranca con otro módulo' ],
+            solucion:[ 'Reasentar módulo', 'Probar uno a la vez', 'Desactivar XMP temporal', 'Limpiar slot aire comprimido', 'Usar otro banco / plan reemplazo placa' ],
+            tips:[ 'Revisar manual de la placa' ] },
+          { id:'ram-latencia-alta', titulo:'Latencia elevada', gravedad:'Baja',
+            causas:[ 'Frecuencia baja', 'IO saturando bus', 'Dual channel ausente', 'Interleaving desactivado', 'Throttling térmico' ],
+            deteccion:[ 'Benchmark memoria bajo', 'Sólo un canal activo', 'Frecuencia menor a especificación', 'Latencias herramienta altas', 'Temp módulo >50°C' ],
+            solucion:[ 'Activar perfil XMP', 'Configurar dual channel correcto', 'Reducir procesos IO', 'Mejorar ventilación interna', 'Evitar underclock extremo' ],
+            tips:[ 'Emparejar capacidades siempre' ] }
+        ]},
+      { id:'almacenamiento', nombre:'Disco / Almacenamiento', icon:'💽', problemas:[
+          { id:'hdd-sectores', titulo:'Sectores defectuosos', gravedad:'Alta',
+            causas:[ 'Desgaste mecánico', 'Golpes/vibraciones', 'Apagados bruscos', 'Temperatura alta sostenida', 'Lubricación interna degradada' ],
+            deteccion:[ 'SMART sectores reasignados', 'fsck bloques ilegibles', 'Lecturas irregulares', 'Sonido clic repetido', 'Errores I/O kernel' ],
+            solucion:[ 'Respaldar datos críticos', 'smartctl -t long', 'Clonar con ddrescue', 'Marcar sectores e2fsck -c', 'Reemplazar si pendientes crecen', 'Instalar UPS', 'Registrar horas' ],
+            tips:[ 'Monitorear semanalmente si hay pendientes' ] },
+          { id:'hdd-arranque-lento', titulo:'Arranque muy lento', gravedad:'Media',
+            causas:[ 'Servicios inicio excesivos', 'Fragmentación alta (HDD)', 'Sectores pendientes en zona inicial', 'Orden arranque incorrecto', 'Disco casi lleno' ],
+            deteccion:[ 'Uso disco 100% tras inicio', 'iostat await alto', 'SMART OK salvo pendientes', 'Mejora tras reinicio temporal', 'POST normal luego lentitud' ],
+            solucion:[ 'Deshabilitar servicios no críticos', 'Desfragmentar si sano', 'Revisar orden arranque BIOS', 'Liberar espacio >20%', 'Analizar SMART y prevenir daño' ],
+            tips:[ 'Migrar a SSD reduce drásticamente' ] },
+          { id:'hdd-ruido-anomalo', titulo:'Ruido anómalo / chasquidos', gravedad:'Alta',
+            causas:[ 'Cabezal recalibrando', 'Golpe previo', 'Desgaste superficie', 'Vibración externa', 'Fuente inestable' ],
+            deteccion:[ 'Sonido clic repetitivo', 'Pending sector en aumento', 'Velocidad lectura irregular', 'Errores I/O intermitentes', 'SMART reallocated sube rápido' ],
+            solucion:[ 'Apagar y respaldar inmediato', 'Guardar smartctl -x', 'Clonar con ddrescue', 'Evitar uso intenso', 'Reemplazar disco' ],
+            tips:[ 'No mover gabinete mientras gira' ] },
+          { id:'hdd-fs-corrupto', titulo:'Sistema de archivos corrupto', gravedad:'Media',
+            causas:[ 'Cortes eléctricos', 'Apagados forzados', 'Sectores defectuosos en metadatos', 'Malware estructura FS', 'Controlador SATA defectuoso' ],
+            deteccion:[ 'fsck inodes huérfanos', 'Montaje sólo lectura', 'Journal replay fallido', 'Archivos desaparecen', 'SMART físico sano' ],
+            solucion:[ 'Montar read-only', 'Ejecutar fsck seguro', 'Respaldar datos íntegros', 'Verificar salud física', 'Restaurar backup limpio', 'Investigar causa cortes', 'Documentar incidente' ],
+            tips:[ 'Implementar UPS y apagado correcto' ] }
+        ]},
+      { id:'psu', nombre:'Fuente de Poder', icon:'🔌', problemas:[
+          { id:'psu-inestable', titulo:'Voltaje inestable / Reinicios', gravedad:'Alta',
+            causas:[ 'Condensadores degradados', 'Polvo interno', 'Carga >80% continua', 'Distribución deficiente líneas', 'Rizado excesivo' ],
+            deteccion:[ 'Variación >5% multímetro', 'Reinicios con periféricos', 'Olor eléctrico leve', 'Coil whine alto', 'Condensadores abombados' ],
+            solucion:[ 'Medir voltajes reposo/carga', 'Limpiar interior (desconectada)', 'Reducir periféricos para prueba', 'Sustituir si daño físico', 'Fuente nueva con margen ≥40%', 'Instalar protector voltaje' ],
+            tips:[ 'Preferir certificación 80+' ] },
+          { id:'psu-ventilador-ruidoso', titulo:'Ventilador ruidoso', gravedad:'Baja',
+            causas:[ 'Polvo acumulado', 'Rodamiento desgastado', 'Curva agresiva firmware', 'Temp interna alta', 'Gabinete mal ventilado' ],
+            deteccion:[ 'Ruido constante en reposo', 'RPM elevadas', 'Temp >45°C', 'Sin ciclos de reducción', 'Mejora temporal al soplar aire' ],
+            solucion:[ 'Limpiar rejillas externas', 'Mejorar flujo aire gabinete', 'Sustituir fuente si ventilador falla', 'Revisar cables obstruyendo', 'No abrir PSU sellada' ],
+            tips:[ 'No lubricar ventilador interno' ] },
+          { id:'psu-olor-quemado', titulo:'Olor a quemado', gravedad:'Alta',
+            causas:[ 'Sobrecalentamiento interno', 'Corto componentes', 'Condensador fallando', 'Entrada inestable', 'Polvo + calor acumulado' ],
+            deteccion:[ 'Olor químico persistente', 'Decoloración rejillas', 'Reinicio abrupto carga', 'Voltajes >5% variación', 'Chispazos raros' ],
+            solucion:[ 'Apagar y desconectar inmediato', 'Inspección visual externa', 'Sustituir fuente', 'Verificar estabilidad red eléctrica', 'Registrar incidente' ],
+            tips:[ 'No re-encender para probar' ] },
+          { id:'psu-apagado-gpu', titulo:'Apagado al iniciar GPU', gravedad:'Media',
+            causas:[ 'Potencia insuficiente', 'Cable PCIe dañado', 'Picos simultáneos CPU+GPU', 'Distribución cables incorrecta', 'Overclock GPU alto' ],
+            deteccion:[ 'Apagado sólo en benchmarks', 'Logs pérdida de energía', 'Consumo pico cercano al máximo', 'Reinicio al conectar segundo monitor', 'Estable fuera de carga 3D' ],
+            solucion:[ 'Usar cables PCIe separados', 'Quitar overclock GPU', 'Medir consumo real', 'Fuente de mayor potencia', 'Revisar conectores' ],
+            tips:[ 'Cables separados para cada conector 8-pin' ] }
+        ]},
+      { id:'gpu', nombre:'Gráficos / GPU', icon:'🎮', problemas:[
+          { id:'gpu-artifact', titulo:'Artefactos gráficos', gravedad:'Media',
+            causas:[ 'VRAM dañada', 'Drivers corruptos', 'Overclock inestable', 'Conector PCIe sucio', 'Fuente insuficiente' ],
+            deteccion:[ 'Líneas / cuadros anómalos', 'Flicker pruebas 3D', 'Errores Xorg/dmesg', 'Temp >85°C con glitches', 'Sólo bajo carga 3D' ],
+            solucion:[ 'Limpiar tarjeta y slot', 'Reinstalar drivers limpios', 'Desactivar overclock', 'Mejorar ventilación lateral', 'Reemplazar GPU si artefactos en POST' ],
+            tips:[ 'Detener uso para evitar daño mayor' ] },
+          { id:'gpu-pantalla-negra', titulo:'Pantalla negra bajo carga', gravedad:'Alta',
+            causas:[ 'Driver inestable', 'Fuente insuficiente', 'Sobrecalentamiento extremo', 'Cable de video defectuoso', 'BIOS modificada' ],
+            deteccion:[ 'Señal se corta al iniciar juego', 'Temp >90°C previa', 'Reset GPU en logs', 'Recupera al reconectar cable', 'Benchmark reproduce fallo' ],
+            solucion:[ 'Actualizar / reinstalar driver', 'Comprobar fuente y cables', 'Limpiar disipador y renovar pasta', 'Probar otro cable/puerto', 'Restaurar BIOS original' ],
+            tips:[ 'Registrar versiones de driver probadas' ] },
+          { id:'gpu-ventiladores-max', titulo:'Ventiladores al 100%', gravedad:'Baja',
+            causas:[ 'Curva personalizada agresiva', 'Sensor térmico erróneo', 'Software en conflicto', 'Pasta térmica degradada', 'Gabinete caliente' ],
+            deteccion:[ 'RPM máximas en baja carga', 'Temperatura real <60°C', 'Lecturas erráticas', 'Se normaliza al cerrar utilidades', 'Ruido elevado constante' ],
+            solucion:[ 'Restablecer curva por defecto', 'Cerrar software duplicado', 'Verificar sensor con otra app', 'Cambiar pasta térmica', 'Mejorar ventilación general' ],
+            tips:[ 'Evitar múltiples herramientas de control simultáneas' ] },
+          { id:'gpu-crash-apps', titulo:'Cierre de aplicaciones 3D', gravedad:'Media',
+            causas:[ 'Driver incompatible', 'VRAM insuficiente', 'Overclock aplicado', 'Temperatura elevada sostenida', 'Shaders corruptos' ],
+            deteccion:[ 'Apps cierran sin error claro', 'Logs muestran reset del dispositivo', 'Crash en APIs específicas', 'Uso VRAM casi completo', 'Temp alta antes del cierre' ],
+            solucion:[ 'Reinstalar driver limpio', 'Reducir calidad gráfica', 'Desactivar overclock', 'Limpiar ventiladores', 'Regenerar caché de shaders' ],
+            tips:[ 'Mantener historial de cambios' ] }
+        ]},
+  { id:'mb', nombre:'Placa Madre', icon:'🧩', problemas:[
+          { id:'mb-condensadores', titulo:'Condensadores deteriorados', gravedad:'Alta',
+            causas:[ 'Calor localizado crónico', 'Edad >5 años', 'Fluctuaciones eléctricas', 'Componentes baja calidad' ],
+            deteccion:[ 'Tapas abombadas/fuga', 'Inestabilidad general múltiple', 'Olor químico VRM', 'Voltajes auxiliares erráticos' ],
+            solucion:[ 'Documentar con fotos', 'No reemplazar sin equipo adecuado', 'Migrar componentes a placa sana', 'Mejorar ventilación', 'Planificar reemplazo' ],
+            tips:[ 'Evitar manipulación que cause cortos' ] },
+          { id:'mb-slots-pcie', titulo:'Slots PCIe no reconocen', gravedad:'Media',
+            causas:[ 'Pines doblados CPU', 'Suciedad en slot', 'BIOS desactualizada', 'Bifurcación forzada', 'Daño físico inserción' ],
+            deteccion:[ 'Dispositivo ok en otro slot', 'lspci no muestra tarjeta', 'BIOS no lista dispositivo', 'Errores event log', 'Slot sucio visible' ],
+            solucion:[ 'Limpiar slot aire', 'Actualizar BIOS', 'Probar en otro equipo', 'Restablecer bifurcación', 'Planificar reemplazo' ],
+            tips:[ 'Insertar siempre alineando sin presión excesiva' ] },
+            { id:'mb-usb-intermitente', titulo:'USB intermitente', gravedad:'Baja',
+            causas:[ 'Controlador sobrecalentado', 'Drivers corruptos', 'Dispositivos alto consumo', 'Cableado frontal defectuoso', 'Hub genérico mala calidad' ],
+            deteccion:[ 'Desconexiones en logs', 'Falla bajo copia grande', 'Frontal falla pero trasero ok', 'Dispositivo estable en otro PC', 'Temperatura interna elevada' ],
+            solucion:[ 'Reinstalar drivers USB', 'Probar sin hub externo', 'Verificar cableado frontal', 'Mejorar ventilación', 'Usar alimentación externa' ],
+            tips:[ 'No saturar puertos con discos sin fuente' ] },
+          { id:'mb-red-falla', titulo:'Red integrada falla', gravedad:'Media',
+            causas:[ 'Driver obsoleto', 'Conector RJ45 dañado', 'Interferencia eléctrica', 'Firmware BIOS antiguo', 'Chipset caliente' ],
+            deteccion:[ 'Pérdida de paquetes', 'Resets adaptador en dmesg', 'Velocidad 100Mbps limitada', 'Adaptador USB externo estable', 'Chipset >70°C' ],
+            solucion:[ 'Actualizar driver LAN', 'Cambiar cable', 'Actualizar BIOS', 'Mejorar ventilación chipset', 'Instalar NIC dedicada' ],
+            tips:[ 'Registrar condiciones de red en reporte' ] }
+        ]}
+    ,
+      { id:'monitor', nombre:'Monitor', icon:'🖥️', problemas:[
+          { id:'monitor-sin-imagen', titulo:'Sin imagen / pantalla en negro', gravedad:'Alta',
+            causas:[ 'Cable suelto o dañado', 'Fuente del monitor fallando', 'Señal GPU no llega', 'Configuración de brillo/entrada erronea' ],
+            deteccion:[ 'Monitor con led encendido pero pantalla negra', 'Funciona con otro PC', 'Señal recupera al reconectar cable', 'No detecta entrada en menú OSD' ],
+            solucion:[ 'Comprobar y sustituir cable video (HDMI/DP/VGA)', 'Probar otro puerto del monitor', 'Probar monitor en otro equipo', 'Verificar configuración de entrada en OSD' ],
+            tips:[ 'Mantener repuestos de cables de video disponibles' ] },
+          { id:'monitor-parpadeo', titulo:'Parpadeo / Intermitencias', gravedad:'Media',
+            causas:[ 'Frecuencia/refresh mal configurada', 'Driver GPU incompatible', 'Cable defectuoso', 'Problema de backlight' ],
+            deteccion:[ 'Parpadeo sólo en ciertas resoluciones', 'Mejora al cambiar cable', 'Backlight inconsistente al inclinar pantalla', 'Se reproduce al mover el cable' ],
+            solucion:[ 'Probar diferentes resoluciones y refresh', 'Actualizar driver GPU', 'Sustituir cable', 'Evaluar reparación profesional si es backlight' ],
+            tips:[ 'Anotar resolución y frecuencia donde ocurre para pruebas' ] },
+          { id:'monitor-colores', titulo:'Colores alterados / bandas', gravedad:'Baja',
+            causas:[ 'Ajustes OSD incorrectos', 'Problema con LUT o perfil de color', 'Cable con pines dañados', 'Panel envejecido' ],
+            deteccion:[ 'Tonos extraños en fotos específicas', 'Banding en degradados', 'Se corrige con ajuste OSD temporalmente' ],
+            solucion:[ 'Restaurar valores OSD por defecto', 'Probar otro cable/entrada', 'Calibrar con herramienta si es necesario', 'Considerar sustitución si panel envejecido' ],
+            tips:[ 'Usar perfil sRGB para trabajo escolar general' ] },
+          { id:'monitor-filas-pixeles', titulo:'Pixeles muertos / Líneas', gravedad:'Media',
+            causas:[ 'Defecto fábrica', 'Daño por presión o golpe', 'Fallos del driver de panel', 'Problema del controlador interno' ],
+            deteccion:[ 'Pixeles siempre apagados o siempre encendidos', 'Líneas horizontales persistentes', 'No se modifican con cambio de resolución' ],
+            solucion:[ 'Intentar consola de reparación píxel (soft)', 'Comprobar garantía', 'Reemplazo de panel o monitor si persiste' ],
+            tips:[ 'Documentar con fotos para reclamar garantía' ] }
+        ]},
+      { id:'perifericos', nombre:'Periféricos', icon:'⌨️', problemas:[
+          { id:'perif-teclado-no-funciona', titulo:'Teclado no responde', gravedad:'Media',
+            causas:[ 'Puerto USB dañado', 'Driver corrupto', 'Teclas bloqueadas por suciedad', 'Firmware del teclado' ],
+            deteccion:[ 'Teclado sin retroiluminación', 'Funciona en otro puerto/PC', 'Entrada por BIOS no responde' ],
+            solucion:[ 'Probar otro puerto USB', 'Probar otro teclado', 'Limpiar teclado con aire y paño', 'Reinstalar driver o actualizar firmware' ],
+            tips:[ 'Mantener teclado de repuesto en laboratorio' ] },
+          { id:'perif-mouse-arrastre', titulo:'Mouse con arrastre o salto', gravedad:'Baja',
+            causas:[ 'Superficie inadecuada', 'Sensor sucio', 'Problema de polling rate', 'Interferencia inalámbrica' ],
+            deteccion:[ 'Movimiento errático en cualquier app', 'Mejora al cambiar superficie', 'Se estabiliza con otro mouse' ],
+            solucion:[ 'Limpiar sensor óptico', 'Probar sobre alfombrilla adecuada', 'Ajustar polling rate o DPI', 'Reubicar receptor inalámbrico' ],
+            tips:[ 'Evitar superficies reflectantes para pruebas' ] },
+          { id:'perif-audio-no-sale', titulo:'Audio no sale por altavoces', gravedad:'Media',
+            causas:[ 'Conexión incorrecta (jack/USB)', 'Salida predeterminada equivocada', 'Driver de audio', 'Altavoz dañado' ],
+            deteccion:[ 'Sonido por auriculares pero no por altavoces', 'Salida sólo en cierto puerto', 'Mejora usando USB externo' ],
+            solucion:[ 'Verificar salida por SO, cambiar dispositivo por defecto', 'Probar con altavoz externo USB', 'Reinstalar driver audio', 'Probar altavoces en otro equipo' ],
+            tips:[ 'Etiquetar cables y puertos para facilitar diagnóstico' ] },
+          { id:'perif-conexion-intermitente', titulo:'Conexión intermitente USB', gravedad:'Media',
+            causas:[ 'Puerto USB débil', 'Cable con mal contacto', 'Problema energético de la placa', 'Hub con mala alimentación' ],
+            deteccion:[ 'Dispositivo se desconecta/reconecta', 'Funciona al mover cable o al cambiar puerto', 'Logs de sistema muestran desconexión' ],
+            solucion:[ 'Probar en puerto trasero directamente', 'Cambiar cable', 'Usar hub con alimentación externa', 'Revisar power settings en BIOS/OS' ],
+            tips:[ 'Registrar cuándo y qué cambios provocan la desconexión' ] }
+        ]},
+      { id:'sistema', nombre:'Sistema operativo', icon:'💿', problemas:[
+          { id:'so-no-arranca', titulo:'No arranca / Bucles de inicio', gravedad:'Alta',
+            causas:[ 'Actualización fallida', 'Sector de arranque corrupto', 'Driver crítico dañado', 'Hardware defectuoso que impide POST' ],
+            deteccion:[ 'Pantalla con error al iniciar', 'Boot loop (reinicios continuos)', 'Mensaje de reparando sistema' ],
+            solucion:[ 'Arrancar desde medio de recuperación y reparar inicio', 'Restaurar desde backup o punto de restauración', 'Reinstalar el sistema si necesario', 'Verificar hardware (memoria, disco) antes de reinstalar' ],
+            tips:[ 'Mantener imagen/ISO de recuperación y backups actualizados' ] },
+          { id:'so-lento', titulo:'Sistema lento tras actualizaciones', gravedad:'Media',
+            causas:[ 'Actualizaciones en segundo plano', 'Controladores incompatibles', 'Fragmentación (HDD)', 'Servicios mal configurados' ],
+            deteccion:[ 'Uso de CPU/disk elevado en inicio', 'Inicio más lento que antes', 'Mejora temporal tras reinicio' ],
+            solucion:[ 'Revisar actualizaciones aplicadas y desinstalar problemáticas', 'Actualizar drivers a versiones compatibles', 'Optimizar servicios de inicio', 'Considerar migrar a SSD si es HDD' ],
+            tips:[ 'Probar arranque limpio en modo seguro para aislar servicios' ] },
+          { id:'so-errores-act', titulo:'Actualizaciones fallidas', gravedad:'Media',
+            causas:[ 'Interrupción de red durante descarga', 'Espacio insuficiente', 'Archivos de sistema bloqueados', 'Incompatibilidad con drivers' ],
+            deteccion:[ 'Código de error de actualización', 'Rollback automático tras reinicio', 'Registro de Windows Update o gestor de paquetes' ],
+            solucion:[ 'Liberar espacio y volver a intentar', 'Descargar paquetes manualmente y aplicar', 'Reparar imágenes de sistema (sfc /scannow, DISM)', 'Actualizar drivers previamente' ],
+            tips:[ 'Programar actualizaciones fuera de horario de clase' ] },
+          { id:'so-conflicto-drivers', titulo:'Conflictos con drivers', gravedad:'Media',
+            causas:[ 'Instalación de drivers incorrectos', 'Actualización automática que no es compatible', 'Firmware antiguo de periféricos' ],
+            deteccion:[ 'BSOD o kernel panic específicos', 'Dispositivo deja de trabajar tras driver', 'Registros del sistema mostrando errores de driver' ],
+            solucion:[ 'Restaurar driver a versión anterior estable', 'Usar drivers del fabricante y evitar paquetes genéricos', 'Bloquear actualizaciones automáticas para controladores críticos' ],
+            tips:[ 'Mantener repositorio de drivers certificados del laboratorio' ] }
+        ]}
+    ];
+
+    // Referencias DOM
+    const componentList = document.getElementById('componentList');
+    const problemList = document.getElementById('problemList');
+    const problemItems = document.getElementById('problemItems');
+    const problemTitle = document.getElementById('problemTitle');
+    const problemMeta = document.getElementById('problemMeta');
+    const faultContent = document.getElementById('faultContent');
+
+    let componenteActual = null;
+    let problemaActual = null;
+
+    function renderComponents(){
+      componentList.innerHTML='';
+      data.forEach(c => {
+        const li = document.createElement('li');
+        const btn = document.createElement('button');
+        btn.innerHTML = `<span class="dot"></span><span>${c.icon} ${c.nombre}</span>`;
+        if(componenteActual && componenteActual.id===c.id) btn.classList.add('active');
+        btn.addEventListener('click', ()=>{ componenteActual=c; problemaActual=null; renderProblems(); });
+        li.appendChild(btn); componentList.appendChild(li);
+      });
+    }
+
+    function renderProblems(){
+      if(!componenteActual){ problemList.style.display='none'; return; }
+      problemList.style.display='block';
+      problemItems.innerHTML='';
+      componenteActual.problemas.forEach(p => {
+        const li = document.createElement('li');
+        const btn = document.createElement('button');
+        btn.textContent = p.titulo;
+        if(problemaActual && problemaActual.id===p.id) btn.classList.add('active');
+        btn.addEventListener('click', ()=>{ problemaActual=p; renderProblem(); });
+        li.appendChild(btn); problemItems.appendChild(li);
+      });
+      renderComponents();
+      problemList.classList.remove('animate-fade'); void problemList.offsetWidth; problemList.classList.add('animate-fade');
+      renderProblem();
+    }
+
+    // Diccionario de detalles ampliados para cada paso breve de solucion
+    const detalles = {
+      // CPU
+      'Apagar y desconectar':'Apagar y desconectar: Cierra el sistema operativo correctamente, apaga el equipo, desconecta el cable de corriente y espera 30 segundos para disipar energía residual.',
+      'Retirar y limpiar disipador (isopropílico 90%)':'Retirar y limpiar disipador (isopropílico 90%): Afloja los tornillos en patrón cruzado, levanta el disipador sin girar bruscamente, limpia pasta vieja con papel sin pelusa humedecido en alcohol isopropílico hasta que la superficie quede brillante.',
+      'Aplicar pasta (punto grano arroz)':'Aplicar pasta (punto grano arroz): Coloca una pequeña gota centrada del tamaño de un grano de arroz (no extender manualmente); la presión del disipador la distribuirá de forma uniforme.',
+      'Reinstalar con presión uniforme':'Reinstalar con presión uniforme: Coloca el disipador alineado, aprieta los tornillos alternando esquinas (¼ de vuelta cada vez) hasta llegar a firmeza sin forzar roscas.',
+      'Reorganizar cables para mejorar flujo':'Reorganizar cables para mejorar flujo: Agrupa cables con bridas detrás de la bandeja de la placa y deja despejado el camino entre ventilador frontal y disipador.',
+      'Limpiar polvo sujetando ventiladores':'Limpiar polvo sujetando ventiladores: Usa aire comprimido en ráfagas cortas sujetando las aspas para evitar sobre-rotación que dañe el motor.',
+      'Ajustar curva PWM >60°C':'Ajustar curva PWM >60°C: En BIOS o software de control establece aumento progresivo (por ejemplo 60°C→50%, 75°C→70%, 85°C→100%) evitando saltos bruscos.',
+      'Verificar pico <85°C tras test':'Verificar pico <85°C tras test: Ejecuta prueba de estrés 10 min y confirma con herramienta (sensors/HWMonitor) que la temperatura máxima se estabiliza debajo de 85°C.',
+      'Restaurar BIOS por defecto':'Restaurar BIOS por defecto: Carga perfiles "Optimized Defaults" guardando cambios para eliminar ajustes manuales inestables.',
+      'Actualizar BIOS/microcódigo':'Actualizar BIOS/microcódigo: Descarga versión oficial, aplica siguiendo instrucciones del fabricante evitando apagar durante el proceso.',
+      'Memtest ≥4 pasadas':'Memtest ≥4 pasadas: Arranca herramienta y deja completar al menos cuatro ciclos completos sin errores para considerar la memoria estable.',
+      'Medir 12V/5V/3.3V (≤5% variación)':'Medir 12V/5V/3.3V (≤5% variación): Usa multímetro en conector Molex/SATA comparando valores con tolerancia máxima ±5%.',
+      'Plan de energía Equilibrado':'Plan de energía Equilibrado: En el sistema operativo selecciona perfil balanceado para permitir estados de reposo sin sacrificar picos.',
+      'Escanear malware':'Escanear malware: Ejecuta análisis completo antivirus y herramienta anti-rootkit, revisa procesos sospechosos en el administrador.',
+      'Probar CPU en otra placa':'Probar CPU en otra placa: Tras verificar compatibilidad de socket y BIOS, mueve el procesador usando guantes antiestáticos si disponible.',
+      'Identificar y limitar proceso invasivo':'Identificar y limitar proceso invasivo: Usa top/Administrador de tareas para detectar proceso a >80% constante y ajusta configuración o finaliza si no crítico.',
+      'Cambiar plan energía':'Cambiar plan energía: Activa perfil alto rendimiento momentáneo para pruebas y vuelve a balanceado para operación diaria.',
+      'Limpiar disipador y polvo':'Limpiar disipador y polvo: Extrae ventilador si es posible, limpia aletas con brocha suave y aire comprimido de dentro hacia fuera.',
+      'Actualizar BIOS/microcódigo':'Actualizar BIOS/microcódigo: (Ver paso previo) asegura estabilidad post-flash con reinicio doble.',
+      'Revisar límites térmicos':'Revisar límites térmicos: Verifica configuración de TjMax y potencia en BIOS/UEFI, ajustando si se fijó un límite demasiado bajo.',
+      'Restablecer voltajes auto':'Restablecer voltajes auto: Elimina configuraciones manuales en Vcore/Vsoc y deja que la placa ajuste dinámicamente.',
+      'Habilitar C-States / SpeedStep':'Habilitar C-States / SpeedStep: Activa estados de ahorro profundos (C6/C7) y tecnologías de escalado dinámico en BIOS.',
+      'Optimizar servicios de inicio':'Optimizar servicios de inicio: Deshabilita procesos no esenciales (actualizadores, launchers) para reducir carga en reposo.',
+      'Revisar pasta térmica':'Revisar pasta térmica: Comprueba si se ha secado (color opaco y grietas) y reaplica si lleva >2 años.',
+      'Ajustar suspensión y ahorro':'Ajustar suspensión y ahorro: Configura apagado pantalla y suspensión de discos tras periodos razonables (10–15 min).',
+      // RAM
+      'Retirar módulos y descargar estática':'Retirar módulos y descargar estática: Apaga y desconecta el equipo, toca metal del chasis para descargar electricidad, presiona simultáneamente los dos ganchos laterales del slot hasta que el módulo se eleve y extrae sujetando solo por los bordes sin tocar chips.',
+      'Limpiar contactos (goma + alcohol)':'Limpiar contactos (goma + alcohol): Frota suavemente los contactos dorados con goma suave blanca, elimina residuos con paño sin pelusa humedecido en alcohol isopropílico y deja secar 2 minutos.',
+      'Instalar pares idénticos':'Instalar pares idénticos: Coloca módulos de misma capacidad, frecuencia y latencias en los slots indicados (generalmente A2 y B2) para dual channel.',
+      'Cargar perfil XMP/JEDEC estable':'Cargar perfil XMP/JEDEC estable: En BIOS habilita XMP y selecciona el perfil 1; si inestable vuelve a valores JEDEC.',
+      'Memtest 4–6 pasadas':'Memtest 4–6 pasadas: Ejecuta la herramienta hasta completar varias rondas sin errores (tiempo estimado horas) antes de concluir estabilidad.',
+      'Reemplazar módulo defectuoso':'Reemplazar módulo defectuoso: Identifica módulo con errores repetidos aislándolo y sustituye por otro de especificación igual o superior.',
+      'Registrar inventario':'Registrar inventario: Anota modelo, número de serie y fecha de instalación para seguimiento de fallos futuros.',
+      'Cerrar apps innecesarias':'Cerrar apps innecesarias: Guarda trabajo y cierra aplicaciones de alto consumo (edición video, VM) priorizando liberar RAM.',
+      'Agregar RAM si recurrente':'Agregar RAM si recurrente: Evalúa uso típico; si superas el 80% con tareas normales añade módulos compatibles.',
+      'Ajustar swappiness 10–20':'Ajustar swappiness 10–20: En Linux modifica /etc/sysctl.conf (vm.swappiness=10) y aplica con sysctl -p para reducir uso de swap.',
+      'Limpiar cache navegador':'Limpiar cache navegador: Vacía cache y cierra pestañas que consumen memoria (monitorear con el administrador de tareas del navegador).',
+      'Organizar sesiones por tandas':'Organizar sesiones por tandas: Agrupa tareas pesadas en bloques y evita ejecutar varias simultáneamente.',
+      'Reasentar módulo':'Reasentar módulo: Alinea muesca del módulo con la ranura, inserta firmemente hasta escuchar el clic de ambos ganchos.',
+      'Probar uno a la vez':'Probar uno a la vez: Ejecuta arranque con un solo módulo en cada slot para aislar fallo de banco o módulo.',
+      'Desactivar XMP temporal':'Desactivar XMP temporal: Cambia a valores estándar para descartar inestabilidad por perfil agresivo.',
+      'Limpiar slot aire comprimido':'Limpiar slot aire comprimido: Aplica ráfagas cortas sin acercar la boquilla para evitar condensación.',
+      'Usar otro banco / plan reemplazo placa':'Usar otro banco / plan reemplazo placa: Si un slot no funciona tras limpieza planifica sustitución de la placa madre.',
+      'Activar perfil XMP':'Activar perfil XMP: Selecciona perfil correcto y verifica frecuencia y latencias cargadas en pantalla de BIOS.',
+      'Configurar dual channel correcto':'Configurar dual channel correcto: Coloca módulos en slots alternos según manual (colores emparejados).',
+      'Reducir procesos IO':'Reducir procesos IO: Detén copias masivas o sincronizaciones que saturan bus y elevan latencia.',
+      'Mejorar ventilación interna':'Mejorar ventilación interna: Añade ventilador frontal y ordena cables para bajar temperatura de módulos.',
+      'Evitar underclock extremo':'Evitar underclock extremo: Mantén frecuencia dentro de especificación para no penalizar latencia.',
+      // Almacenamiento
+      'Respaldar datos críticos':'Respaldar datos críticos: Copia inmediatamente archivos irremplazables a otro medio antes de continuar diagnósticos.',
+      'smartctl -t long':'smartctl -t long: Lanza prueba extendida SMART y espera su finalización (puede tardar horas) revisando resultado en smartctl -a.',
+      'Clonar con ddrescue':'Clonar con ddrescue: Usa ddrescue con archivo de log para intentar recuperar la mayor cantidad de sectores legibles en destino sano.',
+      'Marcar sectores e2fsck -c':'Marcar sectores e2fsck -c: Ejecuta chequeo que añade sectores defectuosos a la lista de bloqueos evitando su reutilización.',
+      'Reemplazar si pendientes crecen':'Reemplazar si pendientes crecen: Si atributo Current_Pending_Sector aumenta entre lecturas programa cambio de disco.',
+      'Instalar UPS':'Instalar UPS: Conecta equipo a sistema de alimentación ininterrumpida para evitar apagados bruscos.',
+      'Registrar horas':'Registrar horas: Anota tiempo total de uso para evaluar desgaste frente a vida media esperada.',
+      'Deshabilitar servicios no críticos':'Deshabilitar servicios no críticos: Revisa lista de inicio y desactiva actualizadores, indexadores o launchers redundantes.',
+      'Desfragmentar si sano':'Desfragmentar si sano: Sólo en HDD sin sectores defectuosos, ejecuta herramienta de desfragmentación oficial.',
+      'Revisar orden arranque BIOS':'Revisar orden arranque BIOS: Asegura que el disco del sistema está primero para evitar demoras por dispositivos secundarios.',
+      'Liberar espacio >20%':'Liberar espacio >20%: Elimina archivos temporales y mueve archivos grandes hasta dejar mínimo 20% libre.',
+      'Analizar SMART y prevenir daño':'Analizar SMART y prevenir daño: Interpreta atributos clave (Reallocated, Pending) para decidir reemplazo anticipado.',
+      'Apagar y respaldar inmediato':'Apagar y respaldar inmediato: Detén el uso para reducir riesgo de pérdida adicional antes de clonación.',
+      'Guardar smartctl -x':'Guardar smartctl -x: Genera informe completo y almacénalo para comparar evolución.',
+      'Evitar uso intenso':'Evitar uso intenso: Limita operaciones de escritura/lectura grandes para no agravar fallos mecánicos.',
+      'Reemplazar disco':'Reemplazar disco: Instala unidad nueva, inicializa y restaura datos desde copia.',
+      'Montar read-only':'Montar read-only: Monta el sistema de archivos con opción de sólo lectura para evitar más corrupción.',
+      'Ejecutar fsck seguro':'Ejecutar fsck seguro: Lanza fsck sin forzar reparaciones destructivas y revisa sugerencias antes de aceptar.',
+      'Respaldar datos íntegros':'Respaldar datos íntegros: Copia sólo archivos verificados antes de intentar reconstrucciones.',
+      'Verificar salud física':'Verificar salud física: Revisa SMART y temperatura para confirmar si daño es lógico más que físico.',
+      'Restaurar backup limpio':'Restaurar backup limpio: Recupéra estado previo confiable asegurando integridad post-restauración.',
+      'Investigar causa cortes':'Investigar causa cortes: Revisa instalación eléctrica y patrones de apagado para mitigarlos.',
+      'Documentar incidente':'Documentar incidente: Registra fecha, síntomas y acciones tomadas para trazabilidad.',
+      // PSU
+      'Medir voltajes reposo/carga':'Medir voltajes reposo/carga: Usa multímetro en conectores mientras el sistema está inactivo y luego bajo estrés para comparar variaciones.',
+      'Limpiar interior (desconectada)':'Limpiar interior (desconectada): Sólo si no está sellada y fuera de garantía, abre carcasa y elimina polvo con brocha antiestática; si sellada, limita limpieza a exterior y rejillas.',
+      'Reducir periféricos para prueba':'Reducir periféricos para prueba: Desconecta dispositivos no esenciales (discos secundarios, GPU adicional) para bajar carga.',
+      'Sustituir si daño físico':'Sustituir si daño físico: Ante condensadores abultados u olor fuerte, no reutilices la fuente y reemplaza por modelo certificado.',
+      'Fuente nueva con margen ≥40%':'Fuente nueva con margen ≥40%: Calcula consumo pico y compra PSU con potencia continua al menos 40% superior.',
+      'Instalar protector voltaje':'Instalar protector voltaje: Añade regulador o supresor de picos para estabilidad en redes inestables.',
+      'Limpiar rejillas externas':'Limpiar rejillas externas: Pasa aire comprimido y paño seco para despejar entradas de polvo.',
+      'Mejorar flujo aire gabinete':'Mejorar flujo aire gabinete: Asegura entrada frontal y extracción trasera operativas sin obstrucciones.',
+      'Sustituir fuente si ventilador falla':'Sustituir fuente si ventilador falla: Si el ventilador produce ruido mecánico persistente procede al reemplazo completo.',
+      'Revisar cables obstruyendo':'Revisar cables obstruyendo: Separa mazos pegados a la entrada del ventilador de la PSU.',
+      'No abrir PSU sellada':'No abrir PSU sellada: Evita riesgos eléctricos y pérdida de garantía manteniendo el sello intacto.',
+      'Apagar y desconectar inmediato':'Apagar y desconectar inmediato: Corta alimentación ante olor a quemado para prevenir cortocircuitos mayores.',
+      'Inspección visual externa':'Inspección visual externa: Observa decoloración, hollín o rejillas deformadas sin desmontar.',
+      'Sustituir fuente':'Sustituir fuente: Instala unidad nueva de calidad adecuada y vuelve a conectar periféricos verificando voltajes.',
+      'Verificar estabilidad red eléctrica':'Verificar estabilidad red eléctrica: Usa medidor o consulta historial de variaciones de tensión en la instalación.',
+      'Registrar incidente':'Registrar incidente: Crea informe de lo detectado y pasos seguidos para seguimiento.',
+      'Usar cables PCIe separados':'Usar cables PCIe separados: Conecta cada entrada de la GPU a un cable independiente para distribuir carga.',
+      'Quitar overclock GPU':'Quitar overclock GPU: Restablece frecuencias y voltajes de fábrica para reducir demanda inicial.',
+      'Medir consumo real':'Medir consumo real: Utiliza medidor en enchufe o software de la placa para estimar pico bajo carga.',
+      'Fuente de mayor potencia':'Fuente de mayor potencia: Sustituye por modelo que deje margen operativo adicional (≥30% libre).',
+      'Revisar conectores':'Revisar conectores: Asegura que todos los conectores estén firmes, sin pines doblados ni holguras.',
+      // GPU
+      'Limpiar tarjeta y slot':'Limpiar tarjeta y slot: Retira la GPU, usa aire comprimido y pincel suave en conectores PCIe, evita tocar contactos con dedos.',
+      'Reinstalar drivers limpios':'Reinstalar drivers limpios: Desinstala con herramienta de limpieza (DDU), reinicia y instala versión estable oficial.',
+      'Desactivar overclock':'Desactivar overclock: Restablece curvas de frecuencia y voltaje a valores de referencia.',
+      'Mejorar ventilación lateral':'Mejorar ventilación lateral: Asegura ventilador lateral o espacio libre para entrada de aire fresco a la GPU.',
+      'Reemplazar GPU si artefactos en POST':'Reemplazar GPU si artefactos en POST: Si aparecen defectos antes del sistema operativo, la falla es física y requiere sustitución.',
+      'Actualizar / reinstalar driver':'Actualizar / reinstalar driver: Descarga versión reciente probada y aplica instalación limpia.',
+      'Comprobar fuente y cables':'Comprobar fuente y cables: Verifica conectores PCIe firmes y capacidad de la fuente respecto al consumo de la GPU.',
+      'Limpiar disipador y renovar pasta':'Limpiar disipador y renovar pasta: Desmonta disipador siguiendo guía del fabricante, limpia y aplica pasta nueva centrada.',
+      'Probar otro cable/puerto':'Probar otro cable/puerto: Sustituye cable de video y alterna entre HDMI/DisplayPort para descartar fallo físico.',
+      'Restaurar BIOS original':'Restaurar BIOS original: Flashea BIOS stock si hubo modificación previa usando herramienta oficial.',
+      'Restablecer curva por defecto':'Restablecer curva por defecto: En software de control carga perfil estándar de ventiladores.',
+      'Cerrar software duplicado':'Cerrar software duplicado: Mantén solo una utilidad de monitorización/control para evitar conflictos.',
+      'Verificar sensor con otra app':'Verificar sensor con otra app: Cruza lectura con segunda herramienta (GPU-Z, HWInfo) para descartar error de reporte.',
+      'Cambiar pasta térmica':'Cambiar pasta térmica: Retira disipador y reemplaza pasta asegurando no exceder cantidad.',
+      'Mejorar ventilación general':'Mejorar ventilación general: Añade o reubica ventiladores para crear flujo claro entrada→GPU→salida.',
+      'Reinstalar driver limpio':'Reinstalar driver limpio: (Ver paso anterior) garantiza ausencia de restos de versiones previas.',
+      'Reducir calidad gráfica':'Reducir calidad gráfica: Ajusta resolución y detalles para disminuir uso de VRAM y carga térmica.',
+      'Regenerar caché de shaders':'Regenerar caché de shaders: Borra carpeta cache de la aplicación/juego para forzar recompilación limpia.',
+      'Mantener historial de cambios':'Mantener historial de cambios: Anota fecha y modificaciones (driver, frecuencia) para correlacionar fallos.',
+      // MB
+      'Documentar con fotos':'Documentar con fotos: Toma imágenes claras de condensadores afectados para consulta y evidencia.',
+      'No reemplazar sin equipo adecuado':'No reemplazar sin equipo adecuado: Evita intentos de soldadura sin herramientas y experiencia, puede agravar daño.',
+      'Migrar componentes a placa sana':'Migrar componentes a placa sana: Tras confirmar formato y compatibilidad, mueve CPU/RAM/GPU para evitar riesgos.',
+      'Mejorar ventilación':'Mejorar ventilación: Asegura flujo que enfríe VRM y chipset usando ventiladores dirigidos.',
+      'Planificar reemplazo':'Planificar reemplazo: Define presupuesto, modelo alternativo y ventana de mantenimiento.',
+      'Limpiar slot aire':'Limpiar slot aire: Sopla aire comprimido sin inclinar la lata para evitar expulsión de líquido.',
+      'Actualizar BIOS':'Actualizar BIOS: (Ver pasos previos) comprueba versión instalada y aplica la más reciente estable.',
+      'Probar en otro equipo':'Probar en otro equipo: Instala el dispositivo en un sistema distinto para descartar fallo propio.',
+      'Restablecer bifurcación':'Restablecer bifurcación: En BIOS devuelve opciones PCIe bifurcation al modo automático.',
+      'Insertar siempre alineando sin presión excesiva':'Insertar siempre alineando sin presión excesiva: Asegura que la tarjeta coincide con la ranura y empuja parejo hasta enclavar.',
+      'Reinstalar drivers USB':'Reinstalar drivers USB: Desinstala controladores del administrador de dispositivos y reinstala versión oficial.',
+      'Probar sin hub externo':'Probar sin hub externo: Conecta dispositivo directamente para descartar limitaciones del hub.',
+      'Verificar cableado frontal':'Verificar cableado frontal: Comprueba que el conector frontal USB está firme y sin pines doblados en la placa.',
+      'Usar alimentación externa':'Usar alimentación externa: Conecta discos o hubs a fuente propia para reducir carga de la placa.',
+      'Actualizar driver LAN':'Actualizar driver LAN: Descarga controlador más reciente del fabricante y reinstala.',
+      'Cambiar cable':'Cambiar cable: Sustituye cable Ethernet por uno certificado Cat5e o superior para descartar daño.',
+      'Mejorar ventilación chipset':'Mejorar ventilación chipset: Dirige flujo de aire hacia disipador inferior y evita acumulación de calor local.',
+      'Instalar NIC dedicada':'Instalar NIC dedicada: Añade tarjeta de red PCIe para suplir fallos del controlador integrado.'
+    };
+    // Detalles añadidos para monitor, periféricos y sistema operativo (instrucciones paso a paso)
+    Object.assign(detalles, {
+      // Monitor - pasos detallados
+      'Comprobar y sustituir cable video (HDMI/DP/VGA)': 'Comprobar y sustituir cable video: Apaga el equipo y monitor; desconecta ambos extremos del cable, inspecciona pines y conectores por daños o suciedad, reemplaza por un cable conocido bueno (preferiblemente del mismo tipo), enciende y verifica señal. Si el monitor tiene adaptadores, pruébalos también.',
+      'Probar otro puerto del monitor': 'Probar otro puerto del monitor: Si el monitor tiene múltiples entradas (HDMI/DP/VGA), cambia la entrada usando el menú OSD o conectando el cable en el puerto alternativo para descartar fallo de conector específico.',
+      'Probar monitor en otro equipo': 'Probar monitor en otro equipo: Conecta el monitor a un portátil o PC distinto para confirmar si la falta de imagen es del monitor o del equipo original.',
+      'Verificar configuración de entrada en OSD': 'Verificar configuración de entrada en OSD: Accede al menú del monitor (OSD) con los botones físicos, confirma que la entrada seleccionada coincide con el cable conectado y restablece valores por defecto si hay dudas.',
+      'Probar diferentes resoluciones y refresh': 'Probar diferentes resoluciones y refresh: Desde el sistema operativo (o modo seguro), cambia la resolución y la frecuencia de actualización a valores soportados por el monitor (ej. 60Hz) y comprueba si el parpadeo o artefactos desaparecen.',
+      'Actualizar driver GPU': 'Actualizar driver GPU: Desinstala drivers antiguos y realiza una instalación limpia del controlador oficial del fabricante (NVIDIA/AMD/Intel) siguiendo la guía del proveedor; reinicia el equipo y vuelve a probar.',
+      'Sustituir cable': 'Sustituir cable: Usa un cable nuevo de calidad certificada; evita adaptadores largos y cables dañados que introducen pérdida de señal.',
+      'Evaluar reparación profesional si es backlight': 'Evaluar reparación profesional si es backlight: Si detectas ruido del backlight o zonas oscuras persistentes, no intentes abrir el panel; registra el fallo y acude a servicio técnico autorizado.',
+      'Restaurar valores OSD por defecto': 'Restaurar valores OSD por defecto: En el menú del monitor selecciona "Reset" o "Factory Reset" para evitar calibraciones erróneas que alteren color o brillo.',
+      'Probar otro cable/entrada': 'Probar otro cable/entrada: Similar a sustituir cable — alterna entradas y cables para aislar el fallo al puerto o al cable.',
+      'Calibrar con herramienta si es necesario': 'Calibrar con herramienta si es necesario: Usa una herramienta de calibración (hardware o software como DisplayCAL) para ajustar perfil de color si el problema es de perfil y no físico.',
+      'Considerar sustitución si panel envejecido': 'Considerar sustitución si panel envejecido: Cuando el panel muestra degradación general (colores desvanecidos, backlight decaído), planifica reemplazo por unidad nueva.',
+      'Intentar consola de reparación píxel (soft)': 'Intentar consola de reparación píxel (soft): Aplicar utilidades que parpadeen colores en la zona afectada para intentar reactivar píxeles atascados; si no funciona, documentar y reclamar garantía.',
+      'Comprobar garantía': 'Comprobar garantía: Identifica fecha de compra y política de garantía antes de cualquier manipulación que la anule; conserva fotos y registros.',
+      'Reemplazo de panel o monitor si persiste': 'Reemplazo de panel o monitor si persiste: Si tras pruebas y reparaciones el síntoma continúa, sustituir el panel o el monitor completo según coste/beneficio.',
+
+      // Periféricos - pasos detallados
+      'Probar otro puerto USB': 'Probar otro puerto USB: Conecta el dispositivo en un puerto trasero directo de la placa (no hub frontal) para excluir problemas del conector o alimentacion del hub.',
+      'Probar otro teclado': 'Probar otro teclado: Sustituye temporalmente por otro teclado conocido para confirmar si el problema es del periférico o del sistema.',
+      'Limpiar teclado con aire y paño': 'Limpiar teclado con aire y paño: Desconecta y voltea el teclado, sopla con aire comprimido en ráfagas cortas y limpia superficies con paño seco; para suciedad persistente desmonta teclas según guía del fabricante.',
+      'Reinstalar driver o actualizar firmware': 'Reinstalar driver o actualizar firmware: Desinstala el controlador en el administrador de dispositivos, reinicia y permite que el SO reinstale o aplica firmware oficial del fabricante siguiendo instrucciones.',
+      'Limpiar sensor óptico': 'Limpiar sensor óptico: Apaga mouse, da la vuelta y limpia el sensor y área circundante con un paño seco o hisopo humedecido ligeramente en alcohol isopropílico; evita tocar el sensor directamente con dedos.',
+      'Probar sobre alfombrilla adecuada': 'Probar sobre alfombrilla adecuada: Usa una alfombrilla no reflectante y comprueba si el comportamiento mejora; evita superficies brillantes o de vidrio sin sensor adecuado.',
+      'Ajustar polling rate o DPI': 'Ajustar polling rate o DPI: Si el mouse tiene software, baja el polling rate o cambia DPI para observar si elimina saltos; restaurar valores por defecto para pruebas.',
+      'Reubicar receptor inalámbrico': 'Reubicar receptor inalámbrico: Coloca el receptor en un puerto delantero con extensión o usa un hub USB corto para reducir interferencias; evita acercarlo a fuentes USB de alta corriente.',
+      'Verificar salida por SO, cambiar dispositivo por defecto': 'Verificar salida por SO, cambiar dispositivo por defecto: En la configuración de sonido del sistema selecciona la salida correcta (altavoces integrados vs USB) y prueba audio de sistema.',
+      'Probar con altavoz externo USB': 'Probar con altavoz externo USB: Conecta altavoz/auricular alternativo para descartar fallo de la unidad de salida original.',
+      'Reinstalar driver audio': 'Reinstalar driver audio: Descarga driver oficial del fabricante de la placa/codec y reinstálalo limpiamente; reinicia antes de comprobar.',
+      'Probar altavoces en otro equipo': 'Probar altavoces en otro equipo: Verifica si los altavoces funcionan en otro PC para determinar fallo del altavoz o del equipo.',
+      'Probar en puerto trasero directamente': 'Probar en puerto trasero directamente: Evita hubs y puertos frontales para pruebas, los puertos traseros están directamente en la placa principal y son más fiables.',
+      'Cambiar cable': 'Cambiar cable: Sustituye el cable USB/Jack por otro conocido bueno para eliminar mal contacto o pérdida de señal.',
+      'Usar hub con alimentación externa': 'Usar hub con alimentación externa: Para dispositivos de alto consumo (discos, hubs) usa alimentación propia para evitar caídas de tensión en la placa.',
+      'Revisar power settings en BIOS/OS': 'Revisar power settings en BIOS/OS: Deshabilita suspend-to-USB o ahorro agresivo que puede desconectar puertos; en Windows desactiva ahorro selectivo de USB en opciones de energía.',
+
+      // Sistema operativo - pasos detallados
+      'Arrancar desde medio de recuperación y reparar inicio': 'Arrancar desde medio de recuperación y reparar inicio: Crea un USB booteable (Rufus/Media Creation Tool para Windows o dd/Etcher para Linux). Arranca desde USB, selecciona "Reparar el equipo" → "Solucionar problemas" → "Reparación de inicio". Sigue las indicaciones y reinicia.',
+      'Restaurar desde backup o punto de restauración': 'Restaurar desde backup o punto de restauración: En modo recuperación selecciona "Restaurar sistema" y elige un punto anterior; confirma y deja que el proceso complete sin interrumpir.',
+      'Reinstalar el sistema si necesario': 'Reinstalar el sistema si necesario: Si la reparación falla, realiza copia de seguridad de datos desde un Live USB, luego reinstala el sistema usando imagen oficial; crea cuentas y aplica actualizaciones.',
+      'Verificar hardware (memoria, disco) antes de reinstalar': 'Verificar hardware (memoria, disco) antes de reinstalar: Ejecuta MemTest86 o memtest y SMART (smartctl -a) para detectar fallos físicos; reemplaza componentes si se detectan errores antes de reinstalar.',
+      'Revisar actualizaciones aplicadas y desinstalar problemáticas': 'Revisar actualizaciones aplicadas y desinstalar problemáticas: En Windows consulta historial de actualizaciones y desinstala la actualización que coincide con el inicio del fallo; en Linux revisa paquetes recientes y reinstala o vuelca a versión anterior.',
+      'Actualizar drivers a versiones compatibles': 'Actualizar drivers a versiones compatibles: Descarga drivers oficiales compatibles con la versión del SO; evita paquetes genéricos y realiza instalación limpia.',
+      'Optimizar servicios de inicio': 'Optimizar servicios de inicio: Usa msconfig/Administrador de tareas (Windows) o systemd/análisis de procesos (Linux) para deshabilitar servicios no necesarios y reducir carga en arranque.',
+      'Considerar migrar a SSD si es HDD': 'Considerar migrar a SSD si es HDD: Si el disco es HDD y el sistema es lento, clona disco a SSD y verifica mejoras de rendimiento; planifica imagen y rollback antes de migrar.',
+      'Liberar espacio y volver a intentar': 'Liberar espacio y volver a intentar: Libera >20% de espacio, elimina temporales y archivos huérfanos antes de reintentar la actualización.',
+      'Descargar paquetes manualmente y aplicar': 'Descargar paquetes manualmente y aplicar: Para actualizaciones fallidas, descarga el instalador manual del proveedor (ej. paquete .msu/.exe o .deb) y aplícalo siguiendo instrucciones.',
+      'Reparar imágenes de sistema (sfc /scannow, DISM)': 'Reparar imágenes de sistema (sfc /scannow, DISM): En Windows abre CMD como administrador y ejecuta: sfc /scannow; luego DISM /Online /Cleanup-Image /RestoreHealth; revisa logs y reinicia.',
+      'Bloquear actualizaciones automáticas para controladores críticos': 'Bloquear actualizaciones automáticas para controladores críticos: Ajusta políticas de Windows Update o configura excepciones para evitar que Windows reemplace drivers manualmente.',
+      'Restaurar driver a versión anterior estable': 'Restaurar driver a versión anterior estable: En administrador de dispositivos elige el dispositivo, abre propiedades → driver → "Revertir controlador" y reinicia.',
+      'Usar drivers del fabricante y evitar paquetes genéricos': 'Usar drivers del fabricante y evitar paquetes genéricos: Conserva un repositorio local de drivers probados y certificados para reinstalaciones rápidas.'
+    });
+
+    function ampliarPasos(arr){
+      return arr.map(p => detalles[p] ? detalles[p] : p);
+    }
+
+    function renderProblem(){
+      if(!problemaActual){
+        problemTitle.textContent = componenteActual ? `Problemas en ${componenteActual.nombre}` : 'Selecciona un problema';
+        problemMeta.textContent = '';
+        faultContent.innerHTML = '<p class="muted">Elige un problema específico para desplegar el análisis detallado.</p>';
+        return;
+      }
+      problemTitle.textContent = problemaActual.titulo;
+      problemMeta.innerHTML = `<span class="badge-inline">Gravedad: ${problemaActual.gravedad}</span><span>${componenteActual.nombre}</span>`;
+
+      const causas = listToHTML(problemaActual.causas);
+      const deteccion = listToHTML(problemaActual.deteccion);
+      const solucion = listToHTML(ampliarPasos(problemaActual.solucion));
+      const tips = problemaActual.tips ? listToHTML(problemaActual.tips) : '';
+
+      faultContent.innerHTML = `
+        <section class="fault-section">
+          <h3>1. Causas</h3>
+          ${causas}
+        </section>
+        <section class="fault-section">
+          <h3>2. Cómo detectarlo</h3>
+          ${deteccion}
+        </section>
+        <section class="fault-section">
+          <h3>3. Cómo solucionarlo</h3>
+          ${solucion}
+        </section>
+        ${ tips ? `<div class="fault-tips"><h4>Notas y buenas prácticas</h4>${tips}</div>` : '' }
+      `;
+      faultContent.classList.remove('animate-slide'); void faultContent.offsetWidth; faultContent.classList.add('animate-slide');
+    }
+
+    function listToHTML(arr){
+      if(!arr || !arr.length) return '<p class="muted">Sin datos.</p>';
+      const ul = document.createElement('ul');
+      arr.forEach(x=>{ const li=document.createElement('li'); li.textContent=x; ul.appendChild(li); });
+      return ul.outerHTML;
+    }
+
+    renderComponents();
+
+    // Permitir selección por hash (ej: fallos.html#ram) al abrir la página desde otra sección
+    function selectComponentById(id){
+      if(!id) return;
+      const comp = data.find(d => d.id === id);
+      if(comp){
+        componenteActual = comp;
+        problemaActual = null;
+        renderProblems();
+        // desplazar hacia el contenido para mejorar UX
+        const nav = document.getElementById('componentNav');
+        if(nav) nav.scrollIntoView({behavior:'smooth', block:'start'});
+      }
+    }
+
+    // leer hash o query param
+    const hash = decodeURIComponent(window.location.hash || '').replace(/^#/,'');
+    if(hash) selectComponentById(hash);
+  </script>
+</body>
+</html>
+
+

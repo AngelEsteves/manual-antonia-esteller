@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inicio · E.B.N.B. Antonia Esteller</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="icon" type="image/jpeg" href="fotos_videos/escudo.jpg" />
+  <script type="module" src="./app.js" defer></script>
+</head>
+<body class="landing-page">
+  <header class="header">
+    <nav class="nav">
+      <a class="brand" href="./index.html" id="homeBrand">
+        <img id="brandLogo" src="fotos_videos/escudo.jpg" alt="Escudo E.B.N.B. Antonia Esteller" style="margin-left:-6px; height:48px;" />
+        <span class="brand-name" style="padding-left:8px; white-space:nowrap;">E.B.N.B. "Antonia Esteller"</span>
+      </a>
+      <div class="navLinks">
+        <a href="#inicio">Inicio</a>
+        
+        <a href="#memoria">Galería</a>
+        <a href="#institucion">Institución</a>
+        <a href="./fallos.html">Fallos</a>
+        <a href="./glosario.html">Glosario</a>
+  <a href="./pcs.html">Inventario</a>
+        <button id="downloadPagePDF" class="btn">Descargar PDF</button>
+  <button id="themeToggle" class="icon-btn" title="Tema">☾</button>
+    <img id="uptLogo" src="fotos_videos/uptaclaro.png" alt="UPT Aragua" style="height:48px; margin-left:10px;"/>
+      </div>
+    </nav>
+  </header>
+
+  <main id="inicio">
+    <!-- HERO con videos de fondo -->
+    <section class="landing-hero">
+      <video id="bgVidA" class="landing-video" autoplay muted playsinline loop></video>
+      <video id="bgVidB" class="landing-video" autoplay muted playsinline loop style="opacity:0"></video>
+      <div class="landing-fader" aria-hidden="true"></div>
+      <div class="landing-overlay">
+        <h1 class="landing-title">E.B.N.B. “Antonia Esteller”</h1>
+        <p class="landing-sub">Manual Técnico · Laboratorio de Computación</p>
+        <div class="landing-cta">
+          <a class="btn" href="./pcs.html">Ver Equipos</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="container">
+      <!-- Concepto de mantenimiento (subido) -->
+      <section class="section" id="conceptoMantenimiento">
+        <h2>¿Qué es el mantenimiento de PCs?</h2>
+        <div class="section inner">
+          <div class="segmented" id="maintTabs">
+            <button class="active" data-type="preventivo">🛡️ Preventivo</button>
+            <button data-type="correctivo">🛠️ Correctivo</button>
+          </div>
+          <div id="maintContent" class="fade-panel"></div>
+        </div>
+      </section>
+
+      <!-- Catálogo de componentes -->
+      <section class="section" id="catalogo">
+        <h2>Catálogo de componentes</h2>
+        <p class="muted">Selecciona un componente para ver sus fallas más comunes y cómo solucionarlas.</p>
+        <div id="componentGuideList" class="gallery-grid"></div>
+      </section>
+
+      <!-- Información general + Software / Hardware -->
+      <section class="section" id="infoMantenimiento">
+        <h2>Información general de mantenimiento</h2>
+        <p>El mantenimiento de los equipos de cómputo de la E.B.N.B. "Antonia Esteller" garantiza que los recursos del laboratorio estén disponibles, seguros y en condiciones óptimas para el proceso de enseñanza-aprendizaje.</p>
+        <div class="section inner">
+          <div class="segmented" id="hwSwTabs">
+            <button class="active" data-type="software">💿 Software</button>
+            <button data-type="hardware">🧰 Hardware</button>
+          </div>
+          <div id="hwSwContent" class="fade-panel"></div>
+        </div>
+      </section>
+
+      <!-- Información institucional + mapa -->
+      <section class="section" id="institucion">
+        <h2>Información sobre la institución</h2>
+        <div class="columns">
+          <div class="section inner">
+            <h3>E.B.N.B. “Antonia Esteller”</h3>
+            <h4>Reseña Histórica</h4>
+            <p>A mediados de enero de 1959 inicia sus labores el plantel que luego sería la E.B.N.B. “Antonia Esteller”, integrando alumnos de comunidades vecinas. En 1999 se impulsa el proyecto de Escuelas Bolivarianas, con jornada integral que incorpora alimentación, deporte, cultura y pensamiento bolivariano.</p>
+            <p>En 2005 se consolida con el “Jardín de Infancia” formando un solo equipo directivo; desde 2006 se ejecuta plenamente el Programa de Alimentación Escolar (PAE) garantizando permanencia y atención integral del estudiantado.</p>
+            <h4>Misión</h4>
+            <p>Lograr la identificación del educando con un aprendizaje cotidiano basado en los pilares de la Educación Bolivariana: Aprender a Crear, Convivir y Participar, Valorar y Reflexionar; articulando comunidad y escuela hacia una educación de calidad.</p>
+            <h4>Visión</h4>
+            <p>Ofrecer una educación integral en un espacio de justicia social y renovación pedagógica permanente, promoviendo ciencia, arte, tecnología, deporte y producción cultural con identidad nacional.</p>
+          </div>
+          <div class="section inner">
+            <h3>Ubicación en Google Maps</h3>
+            <p class="muted">Haz clic en el mapa para abrir la ubicación en una pestaña nueva.</p>
+            <p class="address"><strong>Dirección:</strong> Calle “C” s/n entre los barrios 11 de Abril e Independencia, Municipio Girardot, Estado Aragua, Venezuela.</p>
+            <div class="map-wrapper">
+              <!-- Embed search for the literal place name to avoid needing a pb parameter -->
+              <a href="https://www.google.com/maps/search/?api=1&query=EBNB+Antonia+Esteller" target="_blank" rel="noopener">
+                <iframe
+                  class="map-iframe"
+                  loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade"
+                  src="https://www.google.com/maps?q=EBNB+Antonia+Esteller&output=embed&hl=es">
+                </iframe>
+              </a>
+            </div>
+            <div class="contact">
+              <h4>Contacto</h4>
+              <p><strong>Teléfono:</strong> <a href="tel:+584243379183">0424 337 9183</a></p>
+              <p><strong>Correo:</strong> <a href="mailto:antoniaesteller05@gmail.com">antoniaesteller05@gmail.com</a></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Herramientas -->
+      <section class="section" id="toolsSection">
+        <h2>Herramientas para el mantenimiento</h2>
+        <p class="muted">Listado de herramientas recomendadas para realizar el mantenimiento preventivo y correctivo de los equipos del laboratorio.</p>
+        <div id="toolsContent" class="tools-grid"></div>
+      </section>
+
+      <!-- Memoria fotográfica -->
+      <section class="section" id="memoria">
+        <h2>Memoria fotográfica y audiovisual</h2>
+        <div class="segmented" id="mediaToggle">
+          <button class="active" data-type="videos">🎞️ Videos</button>
+          <button data-type="imagenes">🖼️ Imágenes</button>
+        </div>
+        <p class="muted" id="videosIntro">Material que documenta las jornadas de mantenimiento, diagnóstico y uso pedagógico del laboratorio de computación.</p>
+        <div id="mediaContent" class="fade-panel">
+          <div class="video-gallery" id="videoGallery"></div>
+          <div class="gallery-grid" id="imageGallery" style="display:none"></div>
+        </div>
+      </section>
+
+      <!-- Preguntas frecuentes -->
+      <section class="section" id="faq">
+        <h2>Preguntas frecuentes</h2>
+        <p class="muted">Respuestas rápidas sobre el mantenimiento de computadoras del laboratorio.</p>
+        <div id="faqList" class="faq"></div>
+      </section>
+
+      <!-- Programadores (al final, tarjetas con espacio para foto) -->
+      <section class="section" id="programadores">
+        <h2>Programadores</h2>
+        <p class="muted">Equipo desarrollador — Estudiantes del PNF Informática, UPT Aragua.</p>
+        <div class="dev-grid">
+          <article class="card dev-card">
+            <figure class="dev-photo"><img src="fotos_videos/nathalia.png" alt="Foto Nathalia Angelina Rondón Montero" /></figure>
+            <div class="kv"><span class="dot"></span><span>Líder de proyecto</span></div>
+            <h3>Nathalia Angelina Rondón Montero</h3>
+            <div class="meta">
+              <span class="tag">Responsable</span>
+              <span class="tag">Proactiva</span>
+            </div>
+            <p class="muted">Meticulosa con la limpieza de componentes, disciplinada y comprometida con el aprendizaje continuo para la mejora de habilidades.</p>
+            <p class="muted"><strong>Correo:</strong> nathaliarondonm@gmail.com</p>
+          </article>
+
+          <article class="card dev-card">
+            <figure class="dev-photo"><img src="fotos_videos/steven.png" alt="Foto Steven Alexander Arroyo Gil" /></figure>
+            <div class="kv"><span class="dot"></span><span>Desarrollo</span></div>
+            <h3>Steven Alexander Arroyo Gil</h3>
+            <div class="meta">
+              <span class="tag">Frontend</span>
+              <span class="tag">Juegos</span>
+            </div>
+            <p class="muted">Apasionado por los videojuegos e interesado en desarrollo web y de videojuegos. Dispuesto a aprender.</p>
+            <p class="muted"><strong>Correo:</strong> stevenarroyo33102@gmail.com</p>
+          </article>
+
+          <article class="card dev-card">
+            <figure class="dev-photo"><img src="fotos_videos/angel.png" alt="Foto Ángel Sebastian Esteves García" /></figure>
+            <div class="kv"><span class="dot"></span><span>Infra/Backend</span></div>
+            <h3>Ángel Sebastian Esteves García</h3>
+            <div class="meta">
+              <span class="tag">Backend</span>
+              <span class="tag">Sistemas</span>
+            </div>
+            <p class="muted">Interés en sistemas operativos, redes y hardware.</p>
+            <p class="muted"><strong>Correo:</strong> esteveangel43@mail.com</p>
+          </article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <small>© 2025 · Proyecto académico — Universidad Politécnica Territorial del Estado Aragua “Federico Brito Figueroa”.</small>
+  </footer>
+</body>
+</html>
+

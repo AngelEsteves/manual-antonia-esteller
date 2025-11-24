@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PCs · E.B.N.B. Antonia Esteller</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="icon" type="image/jpeg" href="fotos_videos/escudo.jpg" />
+  <script type="module" src="./app.js" defer></script>
+</head>
+<body>
+  <header class="header">
+    <nav class="nav">
+      <a class="brand" href="./index.html">
+        <img id="brandLogo" src="fotos_videos/escudo.jpg" alt="Escudo" style="margin-left:-6px; height:48px;" />
+        <span class="brand-name" style="padding-left:8px; white-space:nowrap;">E.B.N.B. "Antonia Esteller"</span>
+      </a>
+      <div class="navLinks">
+        <a href="./index.html">Inicio</a>
+        <a href="./index.html#memoria">Galería</a>
+        <a href="./index.html#institucion">Institución</a>
+        <a href="./fallos.html">Fallos</a>
+        <a href="./glosario.html">Glosario</a>
+        <a href="./pcs.html" class="active">Inventario</a>
+        <button id="downloadPagePDF" class="btn">Descargar PDF</button>
+        <button id="themeToggle" class="icon-btn" title="Tema">☾</button>
+        <img id="uptLogo" src="fotos_videos/uptaclaro.png" alt="UPT Aragua" style="height:48px; margin-left:10px;"/>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="section">
+      <h2>Listado de equipos</h2>
+      <p class="muted">Selecciona una PC para ver sus componentes.</p>
+
+      <div id="pcGrid" class="pc-grid"></div>
+    </section>
+  </main>
+
+  <template id="pcTemplate">
+    <article class="card pc-card">
+      <div class="pc-head">
+        <strong class="pc-title">PC #<span class="pc-num"></span></strong>
+        <div class="pc-actions">
+          <a class="btn-outline open-ficha" target="_blank" rel="noopener" href="#">Abrir ficha</a>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <script>
+    // Apply dark theme if previously set
+    (function(){
+      try{
+        const t = localStorage.getItem('theme');
+        if(t === 'dark') document.documentElement.classList.add('dark');
+        else document.documentElement.classList.remove('dark');
+      }catch(e){/*ignore*/}
+    })();
+
+    // Data: only the PCs under maintenance (as requested)
+    const pcs = [3,11,6,2,5,13];
+
+    // Components (same for all PCs) — only name + capacity
+    // Hardware según ficha técnica (valores NA si no aplica)
+    const hardware = [
+      {name:'Gabinete', brand:'Lenovo', model:'M58', serial:'11S41R631GZVJ3DVB7AQ8', cap:'N.A', estado:'B'},
+      {name:'Memoria RAM 1', brand:'Hynix', model:'PC-5300U', serial:'11S4A129GZVJ348R9SLB9', cap:'1 GB', estado:'R'},
+      {name:'Memoria RAM 2', brand:'N.A', model:'N.A', serial:'N.A', cap:'N.A', estado:'N.A'},
+      {name:'Disco Duro 1', brand:'Hitachi', model:'HDP7250', serial:'11S45J485GZVJ3GLOO8RRJ', cap:'156.4 GB', estado:'B'},
+      {name:'Disco Duro 2', brand:'N.A', model:'N.A', serial:'N.A', cap:'N.A', estado:'N.A'},
+      {name:'Tarjeta Madre', brand:'Lenovo', model:'G31T-LM', serial:'11S4R5915GZVLOOLM88C41', cap:'4 GB máx', estado:'R'},
+      {name:'Unidad CD/DVD', brand:'Sony', model:'AD-7200S', serial:'87D3F28F111', cap:'16X', estado:'M'},
+      {name:'Fuente de Poder', brand:'Delta Electronics', model:'DPS-220DB1', serial:'11S4A199GZVJ3LF8862958', cap:'220 W', estado:'B'},
+      {name:'Procesador', brand:'Intel', model:'Pentium E2180', serial:'Q830A063', cap:'2.6 GHz', estado:'B'},
+      {name:'Puertos USB', brand:'Luxshare', model:'E176089', serial:'11S419336Z5OOO128SLU4MF', cap:'(Hub interno)', estado:'R'},
+      {name:'Puertos PCI', brand:'UsRobotics', model:'USR5670', serial:'MBXX8K5185', cap:'56 Kbps', estado:'B'},
+      {name:'Monitor', brand:'Lenovo', model:'L197WA', serial:'VIW9397', cap:'19"', estado:'M'},
+      {name:'Teclado', brand:'Lenovo', model:'KU-0225', serial:'038445576', cap:'Español', estado:'R'},
+      {name:'Mouse', brand:'Lenovo', model:'MO28UQZ', serial:'2M5683081895', cap:'Óptico', estado:'B'}
+    ];
+
+    const software = [
+      {name:'Ubuntu', version:'16.04', license:'GNU-GPL', updates:'24.04', pkg:'ubuntu-desktop'},
+      {name:'LibreOffice', version:'5.1.6.2', license:'MPL 2.0', updates:'26.x', pkg:'libreoffice'},
+      {name:'Unzip', version:'2.11', license:'Open-Source', updates:'6.0', pkg:'unzip'},
+      {name:'Evince', version:'3.18.2', license:'GNU-GPL', updates:'47', pkg:'evince'},
+      {name:'Firefox', version:'65.0.1', license:'MPL 2.0', updates:'143.0.4', pkg:'firefox'}
+    ];
+
+    // Mapeo de PDFs específicos por número de computadora
+    const pdfMap = {
+      2:'Ficha6Compu2.pdf',
+      3:'Ficha1Compu3.pdf',
+      5:'Ficha4Compu5.pdf',
+      6:'Ficha3Compu6.pdf',
+      11:'Ficha2Compu11.pdf',
+      13:'Ficha5Compu13.pdf'
+    };
+
+    const pcGrid = document.getElementById('pcGrid');
+    const tpl = document.getElementById('pcTemplate');
+
+    // Modal element with summary column
+    const modal = document.createElement('div');
+    modal.id = 'pcDetailModal';
+    modal.className = 'pc-detail-overlay';
+    modal.innerHTML = `
+      <div class="pc-detail-card" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+        <button class="pc-detail-close icon-btn" aria-label="Cerrar">✕</button>
+        <div class="detail-header">
+          <div class="title-row">
+            <h3 id="detailTitle">PC #</h3>
+            <span class="chip">Inventario</span>
+          </div>
+          <div class="detail-actions">
+            <a class="btn-outline open-ficha-inline" target="_blank" rel="noopener" href="pdf/MANUAL TÉCNICO(1).pdf">Abrir ficha PDF</a>
+          </div>
+        </div>
+        <div class="segmented detail-tabs" id="detailTabs">
+          <button class="active" data-view="hardware">🧰 Hardware</button>
+          <button data-view="software">💿 Software</button>
+        </div>
+        <div class="detail-grid">
+          <div id="detailMain" class="detail-pane"></div>
+          <aside id="detailSummary" class="detail-summary"></aside>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+
+    function buildSummary(){
+      const summaryBox = document.getElementById('detailSummary');
+      if(!summaryBox) return;
+      const internos = hardware.filter(h => !['Monitor','Teclado','Mouse'].includes(h.name));
+      const perifericos = hardware.filter(h => ['Monitor','Teclado','Mouse'].includes(h.name));
+      const estados = internos.concat(perifericos).reduce((acc,h)=>{acc[h.estado]=(acc[h.estado]||0)+1;return acc;},{});
+      summaryBox.innerHTML = `
+        <article class="soft summary-card">
+          <h4>Resumen rápido</h4>
+          <ul class="summary-list">
+            <li><strong>Internos:</strong> ${internos.length}</li>
+            <li><strong>Periféricos:</strong> ${perifericos.length}</li>
+            <li><strong>Estados:</strong><br>${Object.entries(estados).map(([k,v])=>`<span class='comp-state state-${k.toLowerCase()}'>${k}: ${v}</span>`).join(' ')}</li>
+          </ul>
+          <h5 style="margin:14px 0 6px">Software</h5>
+          <ul class="summary-sw">
+            ${software.map(s=>`<li><span>${s.name}</span><small>v${s.version}</small></li>`).join('')}
+          </ul>
+          <p class="muted" style="margin-top:10px;font-size:.65rem">Cambia a la pestaña Software para comandos y licencias.</p>
+        </article>`;
+    }
+
+    function showModal(num){
+      document.getElementById('detailTitle').textContent = `PC #${num}`;
+      const pdfLinkInline = modal.querySelector('.open-ficha-inline');
+      if(pdfLinkInline){
+        const file = pdfMap[num] || 'MANUAL TÉCNICO(1).pdf';
+        pdfLinkInline.href = 'pdf/' + file;
+        pdfLinkInline.textContent = pdfMap[num] ? 'Abrir ficha PDF' : 'Manual genérico';
+      }
+      const mainBox = document.getElementById('detailMain');
+      if(!mainBox){console.error('Sin contenedor principal'); return;}
+      mainBox.innerHTML = `<article class='soft'><h4>Componentes</h4><div class='component-box'></div></article>`;
+      const grid = mainBox.querySelector('.component-box');
+      hardware.forEach(h=>{
+        const div=document.createElement('div');
+        div.className='component-item';
+        div.innerHTML=`<strong class='comp-name'>${h.name}</strong><span class='comp-model'>${h.brand} · ${h.model}</span><span class='comp-cap'>${h.cap}</span><span class='comp-serial'>${h.serial}</span><span class='comp-state state-${(h.estado||'na').toLowerCase()}'>${h.estado}</span>`;
+        grid.appendChild(div);
+      });
+      mainBox.dataset.view='hardware';
+      buildSummary();
+      modal.classList.add('show');
+    }
+
+    function toggleView(view){
+      const mainBox = document.getElementById('detailMain');
+      const tabs = document.querySelectorAll('#detailTabs button');
+      tabs.forEach(b=>b.classList.remove('active'));
+      const activeBtn = Array.from(tabs).find(b=>b.dataset.view===view);
+      if(activeBtn) activeBtn.classList.add('active');
+      if(view==='hardware'){
+        showModal(document.getElementById('detailTitle').textContent.replace('PC #',''));
+      }else{
+        mainBox.innerHTML = `<article class='soft'><h4>Aplicaciones</h4><div class='component-box'></div></article>`;
+        const grid = mainBox.querySelector('.component-box');
+        software.forEach(s=>{
+          const div=document.createElement('div');
+          div.className='component-item';
+          div.innerHTML=`<strong class='comp-name'>${s.name}</strong><span class='comp-model'>v${s.version} · ${s.license}</span><span class='comp-cap'>Actualización: ${s.updates}</span><pre class='cmd-block'>sudo apt install -y ${s.pkg}</pre>`;
+          grid.appendChild(div);
+        });
+        mainBox.dataset.view='software';
+      }
+    }
+
+    function hideModal(){ modal.classList.remove('show'); }
+
+    modal.addEventListener('click', (e)=>{ if(e.target === modal) hideModal(); });
+    modal.querySelector('.pc-detail-close').addEventListener('click', hideModal);
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && modal.classList.contains('show')) hideModal(); });
+    // tabs handler
+    modal.addEventListener('click', (e)=>{
+      const btn = e.target.closest('#detailTabs button');
+      if(!btn) return;
+      toggleView(btn.dataset.view);
+    });
+
+    pcs.forEach(num => {
+      const node = tpl.content.cloneNode(true);
+      const art = node.querySelector('article');
+      art.querySelector('.pc-num').textContent = num;
+      // Asignar PDF específico al enlace de la tarjeta (si existe)
+      const fichaLink = art.querySelector('.open-ficha');
+      if(fichaLink){
+        const file = pdfMap[num] || 'MANUAL TÉCNICO(1).pdf';
+        fichaLink.href = 'pdf/' + file;
+        fichaLink.textContent = pdfMap[num] ? 'Abrir ficha' : 'Manual';
+        fichaLink.title = pdfMap[num] ? `Ficha técnica PC #${num}` : 'Manual genérico';
+      }
+
+      art.querySelector('.pc-head').addEventListener('click', (e) => {
+        if (e.target.closest('.open-ficha')) return;
+        console.log(`Clicked on PC #${num}`);
+        showModal(num);
+      });
+
+      pcGrid.appendChild(art);
+    });
+  </script>
+</body>
+</html>
