@@ -116,7 +116,7 @@
             <span class="chip">Inventario</span>
           </div>
           <div class="detail-actions">
-            <a class="btn-outline open-ficha-inline" target="_blank" rel="noopener" href="pdf/MANUAL TÉCNICO(1).pdf">Abrir ficha PDF</a>
+            <a class="btn-outline open-ficha-inline" target="_blank" rel="noopener" href="pdf/MANUAL TECNICO.pdf">Abrir ficha PDF</a>
           </div>
         </div>
         <div class="segmented detail-tabs" id="detailTabs">
@@ -156,7 +156,7 @@
       document.getElementById('detailTitle').textContent = `PC #${num}`;
       const pdfLinkInline = modal.querySelector('.open-ficha-inline');
       if(pdfLinkInline){
-        const file = pdfMap[num] || 'MANUAL TÉCNICO(1).pdf';
+        const file = pdfMap[num] || 'MANUAL TECNICO.pdf';
         pdfLinkInline.href = 'pdf/' + file;
         pdfLinkInline.textContent = pdfMap[num] ? 'Abrir ficha PDF' : 'Manual genérico';
       }
@@ -215,7 +215,7 @@
       // Asignar PDF específico al enlace de la tarjeta (si existe)
       const fichaLink = art.querySelector('.open-ficha');
       if(fichaLink){
-        const file = pdfMap[num] || 'MANUAL TÉCNICO(1).pdf';
+        const file = pdfMap[num] || 'MANUAL TECNICO.pdf';
         fichaLink.href = 'pdf/' + file;
         fichaLink.textContent = pdfMap[num] ? 'Abrir ficha' : 'Manual';
         fichaLink.title = pdfMap[num] ? `Ficha técnica PC #${num}` : 'Manual genérico';

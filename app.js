@@ -261,46 +261,140 @@ function initToolsSection(){
 
 function initMediaGallery(){
   const toggle = $('#mediaToggle');
+  const categoryToggle = $('#mediaCategoryToggle');
+  const perifericosButton = categoryToggle ? categoryToggle.querySelector('button[data-category="perifericos"]') : null;
   const contentWrap = $('#mediaContent');
   const videoGallery = $('#videoGallery');
   const imageGallery = $('#imageGallery');
-  if(!toggle || !videoGallery || !imageGallery) return;
+  if(!toggle || !categoryToggle || !videoGallery || !imageGallery) return;
 
-  // Ajusta estos nombres a tus archivos reales en fotos_videos
-  const videos = [
-    { src:'fotos_videos/VID_20251114_103830.mp4', title:'CBIT' },
-    { src:'fotos_videos/VID_20251114_104030.mp4', title:'Biblioteca' },
-    { src:'fotos_videos/VID_20251114_104327.mp4', title:'pasillo principal' },
-    { src:'fotos_videos/VID_20251114_104430.mp4', title:'fachada' },
-    { src:'fotos_videos/VID_20251114_104551.mp4', title:'entrada' }
-  ];
+  const videosByCategory = {
+    computadoras:[
+      { src:'fotos_videos/VID_20251114_103830.mp4', title:'Computadoras del laboratorio' }
+    ],
+    mantenimiento:[
+      { src:'fotos_videos/WhatsApp Video 2026-03-15 at 7.48.04 AM.mp4', title:'Mantenimiento de Mouse' },
+      { src:'fotos_videos/WhatsApp Video 2026-03-15 at 7.48.04 AM2.mp4', title:'Mantenimiento de Mouse' },
+      { src:'fotos_videos/WhatsApp Video 2026-03-15 at 7.48.04 AM3.mp4', title:'Mantenimiento de Mouse' },
+      { src:'fotos_videos/WhatsApp Video 2026-03-14 at 5.17.54 PM.mp4', title:'Recopilacion de videos de mantenimiento' }
+    ],
+    perifericos:[],
+    institucion:[
+      { src:'fotos_videos/VID_20251114_104030.mp4', title:'Biblioteca' },
+      { src:'fotos_videos/VID_20251114_104327.mp4', title:'Pasillo principal' },
+      { src:'fotos_videos/VID_20251114_104430.mp4', title:'Fachada' },
+      { src:'fotos_videos/VID_20251114_104551.mp4', title:'Entrada de la institución' }
+    ]
+  };
 
-  // Selección de algunas imágenes para la galería (puedes ampliar la lista)
-  const images = [
-    'IMG_20251114_095533.jpg','IMG_20251114_095722.jpg','IMG_20251114_095835.jpg','IMG_20251114_095855.jpg','IMG_20251114_095929.jpg','IMG_20251114_095951.jpg',
-    'IMG_20251114_100119.jpg','IMG_20251114_100155.jpg','IMG_20251114_100207.jpg','IMG_20251114_100241.jpg','IMG_20251114_100243.jpg','IMG_20251114_100254.jpg',
-    'IMG_20251114_100324.jpg','IMG_20251114_100346.jpg','IMG_20251114_100415.jpg','IMG_20251114_100437.jpg','IMG_20251114_100504.jpg','IMG_20251114_100621.jpg',
-    'IMG_20251114_100650.jpg','IMG_20251114_100700.jpg','IMG_20251114_100719.jpg','IMG_20251114_101033.jpg','IMG_20251114_101045.jpg','IMG_20251114_101059.jpg',
-    'IMG_20251114_101105.jpg','IMG_20251114_101114.jpg','IMG_20251114_101741.jpg','IMG_20251114_101746.jpg','IMG_20251114_101824.jpg','IMG_20251114_101829.jpg',
-    'IMG_20251114_101901.jpg','IMG_20251114_102020.jpg','IMG_20251114_102427.jpg','IMG_20251114_103142.jpg','IMG_20251114_103204.jpg','IMG_20251114_103720.jpg',
-    'IMG_20251114_104042.jpg','IMG_20251114_104322.jpg','IMG_20251114_104427.jpg','IMG_20251114_104545.jpg'
-  ].map(name=>({ src:`fotos_videos/${name}`, title:name.replace(/_/g,' ').replace(/\.jpg$/i,'') }));
+  const imagesByCategory = {
+    computadoras:[
+      'IMG_20251114_095722.jpg','IMG_20251114_095835.jpg','IMG_20251114_095855.jpg','IMG_20251114_095929.jpg',
+      'IMG_20251114_095951.jpg','IMG_20251114_100119.jpg','IMG_20251114_100241.jpg','IMG_20251114_100254.jpg',
+      'IMG_20251114_100504.jpg','IMG_20251114_100621.jpg','IMG_20251114_100650.jpg','IMG_20251114_100700.jpg','IMG_20251114_100719.jpg',
+      'IMG_20260313_100828.jpg'
+    ],
+    mantenimiento:[
+      '8cc293b7-902e-4359-9aa7-ec548002aaf1.jpg','IMG_20251114_095533.jpg','IMG_20251114_101033.jpg',
+      'IMG_20251114_101045.jpg','IMG_20251114_101059.jpg','IMG_20251114_101105.jpg','IMG_20251114_101114.jpg','IMG_20251114_101741.jpg',
+      'IMG_20251114_101746.jpg','IMG_20251114_101824.jpg','IMG_20251114_101829.jpg','IMG_20251114_101901.jpg','IMG_20251114_102020.jpg',
+      'IMG_20251114_102427.jpg','IMG_20251114_103142.jpg','IMG_20251114_103204.jpg','IMG_20251114_103720.jpg'
+    ],
+    perifericos:[
+      'IMG_20251114_100324.jpg','IMG_20251114_100346.jpg','IMG_20251114_100415.jpg','IMG_20251114_100437.jpg'
+    ],
+    institucion:[
+      'IMG_20251114_100155.jpg','IMG_20251114_100207.jpg','IMG_20251114_104042.jpg','IMG_20251114_104322.jpg','IMG_20251114_104427.jpg','IMG_20251114_104545.jpg',
+      'IMG_20260313_094318.jpg'
+    ]
+  };
 
-  videoGallery.innerHTML = videos.map(v=>{
-    const title = (v.title || '').charAt(0).toUpperCase() + (v.title || '').slice(1);
-    return `
-    <figure class="media-card">
-      <video src="${v.src}" controls muted playsinline></video>
-      <figcaption>${title}</figcaption>
-    </figure>
-  `
-  }).join('');
+  let currentCategory = 'computadoras';
 
-  imageGallery.innerHTML = images.map(img=>`
-    <figure class="media-card" data-full="${img.src}">
-      <img src="${img.src}" alt="${img.title}">
-    </figure>
-  `).join('');
+  const computerCaptions = {
+    'IMG_20251114_095722.jpg':'Equipo 2',
+    'IMG_20251114_095835.jpg':'Equipo 3',
+    'IMG_20251114_095855.jpg':'Equipo 5',
+    'IMG_20251114_095929.jpg':'Equipo 11 Siendo formateado',
+    'IMG_20251114_095951.jpg':'Equipo 13',
+    'IMG_20251114_100119.jpg':'Equipo 6',
+    'IMG_20251114_100241.jpg':'Equipo 11 Siendo formateado',
+    'IMG_20251114_100254.jpg':'Equipo 11 Siendo formateado',
+    'IMG_20251114_100504.jpg':'Monitor del Equipo 6',
+    'IMG_20251114_100621.jpg':'Equipo 2',
+    'IMG_20251114_100650.jpg':'Equipo 3',
+    'IMG_20251114_100700.jpg':'Equipo 6',
+    'IMG_20251114_100719.jpg':'Equipo 13',
+    'IMG_20260313_100828.jpg':'Actualizando fichas tecnicas'
+  };
+
+  const perifericosCaptions = {
+    'IMG_20251114_100324.jpg':'Mouse Lenovo',
+    'IMG_20251114_100346.jpg':'Mouse Genius',
+    'IMG_20251114_100415.jpg':'Teclado Exo',
+    'IMG_20251114_100437.jpg':'Teclado Lenovo'
+  };
+
+  const institucionCaptions = {
+    'IMG_20251114_100155.jpg':'Entrada al CBIT',
+    'IMG_20251114_100207.jpg':'CBIT',
+    'IMG_20251114_104042.jpg':'Biblioteca',
+    'IMG_20251114_104322.jpg':'Pasillo principal',
+    'IMG_20251114_104427.jpg':'Fachada',
+    'IMG_20251114_104545.jpg':'Entrada',
+    'IMG_20260313_094318.jpg':'Entregando el afiche'
+  };
+
+  function buildImageObjects(names){
+    return names.map(name=>({
+      src:`fotos_videos/${name}`,
+      title:name.replace(/_/g,' ').replace(/\.jpg$/i,'')
+    }));
+  }
+
+  function renderVideoCategory(category){
+    const videos = videosByCategory[category] || [];
+    videoGallery.innerHTML = videos.map(v=>{
+      const title = (v.title || '').charAt(0).toUpperCase() + (v.title || '').slice(1);
+      return `
+      <figure class="media-card">
+        <video src="${v.src}" controls muted playsinline></video>
+        <figcaption>${title}</figcaption>
+      </figure>
+    `;
+    }).join('');
+  }
+
+  function renderImageCategory(category){
+    const names = imagesByCategory[category] || [];
+    const images = buildImageObjects(names);
+    const categoryLabel = {
+      computadoras:'Computadoras',
+      mantenimiento:'Mantenimiento',
+      perifericos:'Perifericos',
+      institucion:'Institucion'
+    }[category] || 'Galeria';
+
+    imageGallery.innerHTML = images.map(img=>{
+      const fileName = img.src.split('/').pop();
+      let caption = categoryLabel;
+
+      if(category === 'computadoras') caption = computerCaptions[fileName] || categoryLabel;
+      if(category === 'mantenimiento') caption = 'Equipo siendo revisado';
+      if(category === 'perifericos') caption = perifericosCaptions[fileName] || categoryLabel;
+      if(category === 'institucion') caption = institucionCaptions[fileName] || categoryLabel;
+
+      return `
+      <figure class="media-card" data-full="${img.src}">
+        <img src="${img.src}" alt="${img.title}">
+        <figcaption>${caption}</figcaption>
+      </figure>
+    `;
+    }).join('');
+  }
+
+  renderVideoCategory(currentCategory);
+  renderImageCategory(currentCategory);
 
   function set(type){
     if(!contentWrap) return;
@@ -308,6 +402,24 @@ function initMediaGallery(){
     contentWrap.style.transform = 'translateY(4px)';
     setTimeout(()=>{
       const showVideos = type === 'videos';
+
+      // En modo videos ocultamos Perifericos con animacion.
+      if(perifericosButton){
+        if(showVideos){
+          perifericosButton.classList.add('pill-hidden');
+          if(currentCategory === 'perifericos'){
+            currentCategory = 'computadoras';
+            categoryToggle.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+            const fallback = categoryToggle.querySelector('button[data-category="computadoras"]');
+            if(fallback) fallback.classList.add('active');
+            renderVideoCategory(currentCategory);
+            renderImageCategory(currentCategory);
+          }
+        } else {
+          perifericosButton.classList.remove('pill-hidden');
+        }
+      }
+
       videoGallery.style.display = showVideos ? 'grid' : 'none';
       imageGallery.style.display = showVideos ? 'none' : 'grid';
       const intro = $('#videosIntro');
@@ -328,6 +440,18 @@ function initMediaGallery(){
     set(type);
   });
 
+  categoryToggle.addEventListener('click', e=>{
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    const category = btn.dataset.category;
+    if(!category || category === currentCategory) return;
+    currentCategory = category;
+    categoryToggle.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderVideoCategory(currentCategory);
+    renderImageCategory(currentCategory);
+  });
+
   // estado inicial
   set('videos');
 
@@ -340,7 +464,7 @@ function initMediaGallery(){
       overlay.innerHTML = `<div class="lightbox-content"><img alt="" /></div>`;
       document.body.appendChild(overlay);
       overlay.addEventListener('click', ev=>{
-        if(ev.target === overlay) closeLightbox();
+        if(!ev.target.closest('img')) closeLightbox();
       });
       document.addEventListener('keydown', ev=>{
         if(ev.key === 'Escape') closeLightbox();
@@ -410,7 +534,7 @@ function initFaq(){
 function initPdfButton(){
   const btn = document.getElementById('downloadPagePDF');
   if(!btn) return;
-  const manualPath = encodeURI('pdf/MANUAL TÉCNICO(1).pdf');
+  const manualPath = encodeURI('pdf/MANUAL TECNICO.pdf');
   btn.addEventListener('click', ()=>{
     window.open(manualPath, '_blank');
   });

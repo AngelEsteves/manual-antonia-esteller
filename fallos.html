@@ -502,6 +502,91 @@
       return arr.map(p => detalles[p] ? detalles[p] : p);
     }
 
+    function simplificarTexto(texto){
+      const reemplazos = [
+        [/BIOS\/UEFI|BIOS/gi,'configuracion del equipo (BIOS)'],
+        [/GPU/gi,'tarjeta de video'],
+        [/CPU/gi,'procesador'],
+        [/RAM/gi,'memoria'],
+        [/driver|drivers/gi,'controlador(es)'],
+        [/firmware/gi,'software interno del dispositivo'],
+        [/kernel/gi,'sistema'],
+        [/slot/gi,'ranura'],
+        [/XMP/gi,'perfil de memoria'],
+        [/SMART/gi,'estado de salud del disco'],
+        [/overclock/gi,'ajuste de alto rendimiento'],
+        [/throttling/gi,'baja automatica de rendimiento por temperatura']
+      ];
+
+      let salida = (texto || '').trim();
+      reemplazos.forEach(([pattern, replace])=>{
+        salida = salida.replace(pattern, replace);
+      });
+      return salida;
+    }
+
+    function capitalizar(texto){
+      if(!texto) return '';
+      return texto.charAt(0).toUpperCase() + texto.slice(1);
+    }
+
+    function cerrarFrase(texto){
+      if(!texto) return '';
+      return /[.!?]$/.test(texto) ? texto : `${texto}.`;
+    }
+
+    function descripcionFacil(item, tipo){
+      const limpio = simplificarTexto(item)
+        .replace(/\//g, ' o ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      const reglas = [
+        [/pasta térmica.*seca|pasta térmica.*mal aplicada/i,'La pasta termica del procesador esta seca o se coloco mal, y por eso el calor no se disipa bien.'],
+        [/disipador mal asentado/i,'El disipador no esta bien ajustado al procesador, asi que no enfria como deberia.'],
+        [/flujo de aire deficiente/i,'Dentro del gabinete casi no circula aire, por eso el calor se queda atrapado.'],
+        [/polvo acumulado/i,'Hay polvo acumulado en ventiladores y rejillas, y eso sube la temperatura del equipo.'],
+        [/overclock|ajuste de alto rendimiento/i,'El equipo tiene una configuracion de rendimiento demasiado exigente para su enfriamiento actual.'],
+        [/voltaje inestable|voltajes insuficientes/i,'La energia no llega de forma estable, y eso provoca fallas o reinicios.'],
+        [/memoria defectuosa|errores en memoria/i,'La memoria presenta fallas y puede causar bloqueos o pantallas azules.'],
+        [/controlador\(es\).*corrupt|controlador\(es\).*incompatible/i,'El controlador instalado no es estable o no es compatible con el equipo.'],
+        [/arranque muy lento|inicio muy lento/i,'El sistema tarda demasiado en abrir porque hay procesos pesados o problemas de disco.'],
+        [/sectores defectuosos/i,'El disco tiene zonas dañadas donde ya no puede leer o guardar datos de forma segura.'],
+        [/ruido anómalo|chasquidos/i,'El disco hace ruidos irregulares, una señal de desgaste o daño interno.'],
+        [/sin imagen|pantalla en negro/i,'La pantalla no muestra imagen aunque el equipo este encendido.'],
+        [/parpadeo/i,'La imagen parpadea de forma intermitente y no se ve estable.'],
+        [/conexión intermitente/i,'El dispositivo se conecta y desconecta solo, como si perdiera contacto.'],
+        [/no arranca|bucles de inicio/i,'El sistema no logra iniciar con normalidad y se queda reiniciando.']
+      ];
+
+      for(const [patron, texto] of reglas){
+        if(patron.test(limpio)) return texto;
+      }
+
+      if(tipo === 'causas'){
+        const base = limpio.length < 65
+          ? `${limpio} y eso puede causar esta falla`
+          : limpio;
+        return cerrarFrase(capitalizar(base));
+      }
+
+      if(tipo === 'deteccion'){
+        const base = limpio.length < 70
+          ? `${limpio}; es una senal comun de este problema`
+          : limpio;
+        return cerrarFrase(capitalizar(base));
+      }
+
+      if(tipo === 'solucion') return cerrarFrase(capitalizar(limpio));
+
+      return cerrarFrase(capitalizar(limpio));
+    }
+
+    function convertirALenguajeSimple(arr, tipo){
+      if(!arr || !arr.length) return [];
+      return arr.map(item => descripcionFacil(item, tipo));
+    }
+
     function renderProblem(){
       if(!problemaActual){
         problemTitle.textContent = componenteActual ? `Problemas en ${componenteActual.nombre}` : 'Selecciona un problema';
@@ -512,9 +597,9 @@
       problemTitle.textContent = problemaActual.titulo;
       problemMeta.innerHTML = `<span class="badge-inline">Gravedad: ${problemaActual.gravedad}</span><span>${componenteActual.nombre}</span>`;
 
-      const causas = listToHTML(problemaActual.causas);
-      const deteccion = listToHTML(problemaActual.deteccion);
-      const solucion = listToHTML(ampliarPasos(problemaActual.solucion));
+      const causas = listToHTML(convertirALenguajeSimple(problemaActual.causas, 'causas'));
+      const deteccion = listToHTML(convertirALenguajeSimple(problemaActual.deteccion, 'deteccion'));
+      const solucion = listToHTML(convertirALenguajeSimple(ampliarPasos(problemaActual.solucion), 'solucion'));
       const tips = problemaActual.tips ? listToHTML(problemaActual.tips) : '';
 
       faultContent.innerHTML = `
